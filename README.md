@@ -335,9 +335,9 @@ If you use this project in research, please cite:
 ```bibtex
 @software{vehicle_spec_rag_2024,
   title={Vehicle Specification Extraction RAG System},
-  author={Your Name},
+  author={Aditya Kr. Choudhary},
   year={2024},
-  url={https://github.com/yourusername/vehicle-spec-rag}
+  url={https://github.com/AEX-WEX/vehicle-spec-rag}
 }
 ```
 
