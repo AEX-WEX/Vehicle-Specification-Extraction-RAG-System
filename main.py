@@ -226,7 +226,7 @@ Examples:
     
     # Server command
     server_parser = subparsers.add_parser('server', help='Start API server')
-    server_parser.add_argument('--host', default='0.0.0.0', help='Server host')
+    server_parser.add_argument('--host', default='127.0.0.1', help='Server host')
     server_parser.add_argument('--port', type=int, default=8000, help='Server port')
     server_parser.add_argument('--reload', action='store_true', help='Enable auto-reload')
     server_parser.set_defaults(func=cmd_server)

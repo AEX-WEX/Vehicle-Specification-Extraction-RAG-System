@@ -311,7 +311,7 @@ if __name__ == "__main__":
     import argparse
     
     parser = argparse.ArgumentParser(description="Vehicle Spec Extraction API")
-    parser.add_argument("--host", default="0.0.0.0", help="Host address")
+    parser.add_argument("--host", default="127.0.0.1", help="Host address")
     parser.add_argument("--port", type=int, default=8000, help="Port number")
     parser.add_argument("--reload", action="store_true", help="Enable auto-reload")
     
