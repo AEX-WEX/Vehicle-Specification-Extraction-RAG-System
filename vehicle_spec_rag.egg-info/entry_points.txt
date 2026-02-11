@@ -1,0 +1,3 @@
+[console_scripts]
+vehicle-spec-rag = main:main
+vsr = main:main

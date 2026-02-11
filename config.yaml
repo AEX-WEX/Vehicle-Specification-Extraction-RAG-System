@@ -1,0 +1,93 @@
+# Vehicle Specification Extraction RAG System Configuration
+
+# PDF Processing
+pdf:
+  loader: "pymupdf"  # Options: "pymupdf", "pdfminer"
+  extract_images: false
+  extract_tables: true
+  
+# Text Processing
+text:
+  min_chunk_size: 200
+  max_chunk_size: 800
+  chunk_overlap: 100
+  remove_headers_footers: true
+  normalize_whitespace: true
+  
+# Chunking Strategy
+chunking:
+  strategy: "semantic"  # Options: "semantic", "fixed", "recursive"
+  separator_hierarchy:
+    - "\n\n"
+    - "\n"
+    - ". "
+    - " "
+  preserve_metadata: true
+  
+# Embeddings
+embeddings:
+  model_name: "sentence-transformers/all-MiniLM-L6-v2"
+  # Alternative models:
+  # - "sentence-transformers/all-mpnet-base-v2" (higher quality, slower)
+  # - "BAAI/bge-small-en-v1.5" (good balance)
+  batch_size: 32
+  normalize: true
+  device: "cpu"  # Options: "cpu", "cuda", "mps"
+  
+# Vector Store
+vector_store:
+  type: "faiss"  # Options: "faiss", "chroma"
+  index_type: "IndexFlatL2"  # Options: "IndexFlatL2", "IndexIVFFlat"
+  persist_directory: "./index"
+  index_name: "vehicle_specs"
+  
+# Retrieval
+retrieval:
+  top_k: 5
+  score_threshold: null
+  reranking: false
+  max_context_length: 4000
+  
+# LLM Configuration
+# llm:
+#   provider: "openai"  # Options: "openai", "anthropic", "cohere"
+#   model: "gpt-3.5-turbo"  # For OpenAI
+#   # model: "claude-3-sonnet-20240229"  # For Anthropic
+#   temperature: 0.0
+#   max_tokens: 500
+#   timeout: 30
+
+llm:
+  provider: "ollama"           # Changed from "openai"
+  model: "llama3"              # Changed from "gpt-3.5-turbo"
+  temperature: 0.0
+  max_tokens: 500
+  timeout: 60                  # Increased for local model
+  base_url: "http://localhost:11434"  # Added for Ollama
+
+  
+# Extraction
+extraction:
+  output_format: "json"
+  validate_output: true
+  fallback_on_error: true
+  max_retries: 2
+  
+# Logging
+logging:
+  level: "INFO"  # Options: "DEBUG", "INFO", "WARNING", "ERROR"
+  log_file: "./logs/app.log"
+  log_to_console: true
+  
+# API Configuration
+api:
+  host: "0.0.0.0"
+  port: 8000
+  reload: false
+  workers: 1
+  
+# Paths
+paths:
+  data_dir: "./data"
+  index_dir: "./index"
+  logs_dir: "./logs"

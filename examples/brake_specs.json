@@ -1,0 +1,22 @@
+{
+  "query": "brake specifications",
+  "specifications": [
+    {
+      "component": "Brake Caliper Anchor Plate Bolts",
+      "spec_type": "Torque",
+      "value": "250",
+      "unit": "lb-ft",
+      "page_number": 599,
+      "source_chunk_id": "chunk_00852"
+    },
+    {
+      "component": "Lower Arm Forward and Rearward Nuts",
+      "spec_type": "Torque",
+      "value": "350",
+      "unit": "lb-ft",
+      "page_number": 599,
+      "source_chunk_id": "chunk_00852"
+    }
+  ],
+  "num_results": 2
+}
