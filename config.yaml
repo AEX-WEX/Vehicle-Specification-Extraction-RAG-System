@@ -49,15 +49,31 @@ retrieval:
   max_context_length: 4000
   
 # LLM Configuration
+llm:
+  provider: "ollama"  # Options: "ollama", "openai", "anthropic", "cohere"
+  model: "llama3"  # For Ollama
+  base_url: "http://localhost:11434"  # Ollama endpoint
+  temperature: 0.0
+  max_tokens: 500
+  timeout: 60
+
+# Alternative configurations (uncomment to use):
 # llm:
-#   provider: "openai"  # Options: "openai", "anthropic", "cohere"
-#   model: "gpt-3.5-turbo"  # For OpenAI
-#   # model: "claude-3-sonnet-20240229"  # For Anthropic
+#   provider: "openai"
+#   model: "gpt-3.5-turbo"
 #   temperature: 0.0
 #   max_tokens: 500
 #   timeout: 30
 
-llm:
+# For Anthropic:
+# llm:
+#   provider: "anthropic"
+#   model: "claude-3-sonnet-20240229"
+#   temperature: 0.0
+#   max_tokens: 500
+#   timeout: 30
+
+old_llm_section:
   provider: "ollama"           # Changed from "openai"
   model: "llama3"              # Changed from "gpt-3.5-turbo"
   temperature: 0.0

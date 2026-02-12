@@ -33,7 +33,7 @@ This system combines dense vector retrieval with local LLM inference to extract 
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/vehicle-spec-rag.git
+   git clone https://github.com/AEX-WEX/vehicle-spec-rag.git
    cd vehicle-spec-rag
    ```
 
@@ -305,41 +305,22 @@ ollama pull llama3
 - Use GPU for embeddings (set `EMBEDDING_DEVICE=cuda`)
 - Implement query caching
 
-<!-- ## Contributing
-
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-### Code Standards
-
-- Python 3.9+ compatible
-- Black formatting
-- Type hints required
-- Comprehensive docstrings
-- Unit tests for new features
-
-### Reporting Issues
-
-- Check existing issues first
-- Include environment details (Python version, OS, package versions)
-- Provide minimal reproducible example
-- Attach relevant logs -->
-
 ## License
 
 This project is licensed under the MIT License - see [LICENSE](LICENSE) file for details.
 
-<!-- ## Citation
+## Citation
 
-If you use this project in research, please cite: -->
+If you use this project in research, please cite:
 
-<!-- ```bibtex
-@software{vehicle_spec_rag_2024,
+```bibtex
+@software{vehicle_spec_rag_2026,
   title={Vehicle Specification Extraction RAG System},
   author={Aditya Kr. Choudhary},
-  year={2024},
+  year={2026},
   url={https://github.com/AEX-WEX/vehicle-spec-rag}
 }
-``` -->
+```
 
 ## Acknowledgments
 
@@ -359,17 +340,14 @@ If you use this project in research, please cite: -->
 - [ ] Multi-language support
 - [ ] Advanced caching strategies
 
-<!-- ## Support -->
+## Contact & Support
 
-<!-- - **Documentation**: [Full Documentation](docs/)
-- **Issues**: [GitHub Issues](https://github.com/yourusername/vehicle-spec-rag/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/vehicle-spec-rag/discussions) -->
-
-<!-- ## Security -->
-
-<!-- Please see [SECURITY.md](SECURITY.md) for security policies and vulnerability reporting. -->
+- **Author**: Aditya Kr. Choudhary
+- **Email**: adityapscv1919@gmail.com
+- **GitHub**: [AEX-WEX](https://github.com/AEX-WEX)
 
 ---
 
-**Last Updated**: February 2025
+**Last Updated**: February 2026
 **Status**: Production Ready
+**Author**: Aditya Kr. Choudhary
