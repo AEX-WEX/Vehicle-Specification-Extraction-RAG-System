@@ -17,7 +17,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 import uvicorn
 
-from src.pipeline import VehicleSpecRAGPipeline
+from src.pipeline import VehicleSpecRAGPipeline, load_indexed_pdf_metadata
 
 # Configure logging
 logging.basicConfig(
@@ -212,43 +212,86 @@ async def index_pdf(request: IndexRequest, background_tasks: BackgroundTasks):
 async def upload_pdf(file: UploadFile = File(...), force_rebuild: bool = False):
     """
     Upload and index a PDF file.
-    
-    This endpoint accepts a PDF upload and builds the index.
+
+    This endpoint accepts a PDF upload and automatically handles index building.
+    If the uploaded PDF is different from the previously indexed PDF, the index
+    is automatically rebuilt. If the same PDF is uploaded again, the existing
+    index is reused.
+
+    Args:
+        file: PDF file to upload
+        force_rebuild: Force rebuild of index even if PDF matches (default: False)
+
+    Returns:
+        IndexResponse with status and chunk count
     """
     if pipeline is None:
         raise HTTPException(status_code=503, detail="Pipeline not initialized")
-    
+
     if not file.filename.endswith('.pdf'):
         raise HTTPException(status_code=400, detail="Only PDF files are supported")
-    
+
     # Save uploaded file
     data_dir = Path("data")
     data_dir.mkdir(exist_ok=True)
-    
+
     pdf_path = data_dir / file.filename
-    
+
     try:
         with open(pdf_path, "wb") as f:
             content = await file.read()
             f.write(content)
-        
+
         logger.info(f"Saved uploaded file to {pdf_path}")
-        
-        # Build index
+
+        # Build index (will auto-detect if PDF is different)
+        # force_rebuild parameter allows manual override
         pipeline.build_index(str(pdf_path), force_rebuild)
         stats = pipeline.get_status()
-        
+
         return IndexResponse(
             status="success",
-            message=f"PDF uploaded and indexed successfully",
+            message=f"PDF uploaded and indexed successfully (force_rebuild={force_rebuild})",
             num_chunks=stats.get('total_chunks')
         )
-    
+
     except Exception as e:
         logger.error(f"Upload failed: {str(e)}")
         if pdf_path.exists():
             pdf_path.unlink()
         raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
+
+
+@app.get("/indexed_pdf_info")
+async def get_indexed_pdf_info():
+    """
+    Get information about the currently indexed PDF.
+
+    Returns metadata about which PDF is currently indexed, when it was indexed,
+    and other relevant information.
+    """
+    if pipeline is None:
+        raise HTTPException(status_code=503, detail="Pipeline not initialized")
+
+    index_dir = pipeline.config['vector_store']['persist_directory']
+    metadata = load_indexed_pdf_metadata(index_dir)
+
+    if metadata is None:
+        return {
+            "status": "not_indexed",
+            "message": "No PDF has been indexed yet"
+        }
+
+    return {
+        "status": "indexed",
+        "pdf_filename": metadata.get("pdf_filename"),
+        "pdf_path": metadata.get("pdf_path"),
+        "pdf_hash": metadata.get("pdf_hash"),
+        "indexed_at": metadata.get("indexed_at"),
+        "num_chunks": metadata.get("num_chunks"),
+        "embedding_model": metadata.get("embedding_model"),
+        "index_type": metadata.get("index_type")
+    }
 
 
 @app.post("/query", response_model=QueryResponse)

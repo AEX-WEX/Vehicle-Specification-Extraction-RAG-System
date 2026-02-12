@@ -45,12 +45,12 @@ def cmd_index(args):
         
         stats = pipeline.get_status()
         print("\n" + "=" * 80)
-        print("✓ Index built successfully!")
+        print("Index built successfully!")
         print(f"  Total chunks: {stats.get('total_chunks', 'N/A')}")
         print(f"  Index directory: {pipeline.config['vector_store']['persist_directory']}")
-        
+
     except Exception as e:
-        print(f"\n✗ Index building failed: {str(e)}", file=sys.stderr)
+        print(f"\nIndex building failed: {str(e)}", file=sys.stderr)
         sys.exit(1)
 
 

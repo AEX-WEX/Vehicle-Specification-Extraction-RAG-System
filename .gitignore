@@ -139,3 +139,9 @@ vectorstore/
 embeddings_cache/
 model_cache/
 .ollama/
+
+
+#Later
+CONTRIBUTING.md
+SECURITY.md
+CODE_OF_CONDUCT.md

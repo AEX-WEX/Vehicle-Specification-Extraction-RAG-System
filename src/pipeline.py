@@ -9,6 +9,9 @@ import yaml
 from pathlib import Path
 from typing import List, Dict, Optional
 import os
+import hashlib
+import json
+from datetime import datetime
 
 from src.pdf_loader import load_pdf
 from src.chunking import create_chunker, Chunk
@@ -21,6 +24,109 @@ from dotenv import load_dotenv
 load_dotenv()
 
 logger = logging.getLogger(__name__)
+
+
+# Utility functions for PDF metadata tracking
+def get_pdf_hash(pdf_path: str) -> str:
+    """
+    Calculate MD5 hash of PDF file.
+
+    Args:
+        pdf_path: Path to PDF file
+
+    Returns:
+        MD5 hash string
+    """
+    hash_md5 = hashlib.md5()
+    with open(pdf_path, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
+
+
+def load_indexed_pdf_metadata(index_dir: str) -> Optional[Dict]:
+    """
+    Load metadata about the previously indexed PDF.
+
+    Args:
+        index_dir: Path to index directory
+
+    Returns:
+        Metadata dict or None if metadata file doesn't exist
+    """
+    metadata_path = Path(index_dir) / "indexed_pdf_metadata.json"
+
+    if not metadata_path.exists():
+        return None
+
+    try:
+        with open(metadata_path, 'r') as f:
+            return json.load(f)
+    except json.JSONDecodeError:
+        logger.warning(f"Invalid metadata file at {metadata_path}")
+        return None
+
+
+def save_indexed_pdf_metadata(index_dir: str, pdf_path: str, num_chunks: int,
+                              embedding_model: str, index_type: str) -> None:
+    """
+    Save metadata about the indexed PDF.
+
+    Args:
+        index_dir: Path to index directory
+        pdf_path: Path to the indexed PDF
+        num_chunks: Number of chunks created
+        embedding_model: Name of embedding model used
+        index_type: Type of FAISS index used
+    """
+    metadata = {
+        "pdf_filename": Path(pdf_path).name,
+        "pdf_path": str(pdf_path),
+        "pdf_hash": get_pdf_hash(pdf_path),
+        "indexed_at": datetime.now().isoformat(),
+        "num_chunks": num_chunks,
+        "embedding_model": embedding_model,
+        "index_type": index_type
+    }
+
+    os.makedirs(index_dir, exist_ok=True)
+    metadata_path = Path(index_dir) / "indexed_pdf_metadata.json"
+
+    with open(metadata_path, 'w') as f:
+        json.dump(metadata, f, indent=2)
+
+    logger.info(f"Saved metadata: {metadata_path}")
+
+
+def is_pdf_different(pdf_path: str, index_dir: str) -> bool:
+    """
+    Check if the provided PDF is different from the previously indexed PDF.
+
+    Args:
+        pdf_path: Path to current PDF
+        index_dir: Path to index directory
+
+    Returns:
+        True if PDF is different (or no previous PDF), False if same
+    """
+    old_metadata = load_indexed_pdf_metadata(index_dir)
+
+    # No previous metadata means we should rebuild
+    if old_metadata is None:
+        logger.info("No previous index metadata found - will build new index")
+        return True
+
+    # Calculate hash of current PDF
+    current_hash = get_pdf_hash(pdf_path)
+    previous_hash = old_metadata.get("pdf_hash")
+
+    if current_hash != previous_hash:
+        logger.info(f"PDF hash changed - detected new/different PDF")
+        logger.debug(f"Old hash: {previous_hash}, New hash: {current_hash}")
+        return True
+
+    logger.info("PDF hash matches previous index - using existing index")
+    return False
 
 
 class VehicleSpecRAGPipeline:
@@ -57,23 +163,39 @@ class VehicleSpecRAGPipeline:
     def build_index(self, pdf_path: str, force_rebuild: bool = False):
         """
         Build vector index from PDF.
-        
+
         Args:
             pdf_path: Path to service manual PDF
             force_rebuild: Force rebuild even if index exists
         """
         logger.info(f"Building index from PDF: {pdf_path}")
-        
-        # Check if index already exists
+
+        # Check if index already exists and if PDF has changed
         index_dir = self.config['vector_store']['persist_directory']
         index_name = self.config['vector_store']['index_name']
         index_path = Path(index_dir) / f"{index_name}.faiss"
-        
-        if index_path.exists() and not force_rebuild:
+
+        # Determine if we need to rebuild
+        need_rebuild = force_rebuild
+
+        if not need_rebuild and index_path.exists():
+            # Check if PDF is different from previous indexed PDF
+            if is_pdf_different(pdf_path, index_dir):
+                logger.info("Different PDF detected - will rebuild index")
+                need_rebuild = True
+            else:
+                logger.info("Index already exists and PDF matches - using existing index")
+                self.load_index()
+                return
+
+        if not need_rebuild and not index_path.exists():
+            need_rebuild = True
+
+        if not need_rebuild:
             logger.info("Index already exists. Use force_rebuild=True to rebuild.")
             self.load_index()
             return
-        
+
         # Step 1: Extract text from PDF
         logger.info("Step 1/5: Extracting text from PDF...")
         pages = load_pdf(
@@ -84,7 +206,7 @@ class VehicleSpecRAGPipeline:
             normalize_whitespace=self.config['text']['normalize_whitespace']
         )
         logger.info(f"Extracted {len(pages)} pages")
-        
+
         # Step 2: Chunk text
         logger.info("Step 2/5: Chunking text...")
         chunker = create_chunker(
@@ -95,7 +217,7 @@ class VehicleSpecRAGPipeline:
         )
         chunks = chunker.chunk_pages(pages)
         logger.info(f"Created {len(chunks)} chunks")
-        
+
         # Step 3: Initialize embedding model
         logger.info("Step 3/5: Initializing embedding model...")
         self.embedding_model = EmbeddingModel(
@@ -104,12 +226,12 @@ class VehicleSpecRAGPipeline:
             batch_size=self.config['embeddings']['batch_size'],
             normalize=self.config['embeddings']['normalize']
         )
-        
+
         # Step 4: Generate embeddings
         logger.info("Step 4/5: Generating embeddings...")
         embeddings = self.embedding_model.embed_chunks(chunks)
         logger.info(f"Generated embeddings with shape: {embeddings.shape}")
-        
+
         # Step 5: Build vector store
         logger.info("Step 5/5: Building vector index...")
         self.vector_store = FAISSVectorStore(
@@ -118,16 +240,25 @@ class VehicleSpecRAGPipeline:
             persist_directory=index_dir
         )
         self.vector_store.add_embeddings(embeddings, chunks)
-        
+
         # Save index
         os.makedirs(index_dir, exist_ok=True)
         self.vector_store.save(index_name)
         logger.info(f"Index saved to {index_dir}")
-        
+
+        # Save metadata about the indexed PDF
+        save_indexed_pdf_metadata(
+            index_dir=index_dir,
+            pdf_path=pdf_path,
+            num_chunks=len(chunks),
+            embedding_model=self.config['embeddings']['model_name'],
+            index_type=self.config['vector_store']['index_type']
+        )
+
         # Initialize retriever
         self._init_retriever()
-        
-        logger.info("✓ Index build complete!")
+
+        logger.info("Index build complete")
     
     def load_index(self):
         """Load existing vector index."""
@@ -153,7 +284,7 @@ class VehicleSpecRAGPipeline:
         self._init_retriever()
         
         stats = self.vector_store.get_stats()
-        logger.info(f"✓ Index loaded: {stats['total_chunks']} chunks")
+        logger.info(f"Index loaded: {stats['total_chunks']} chunks")
     
     def _init_retriever(self):
         """Initialize retriever."""

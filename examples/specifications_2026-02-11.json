@@ -1,0 +1,50 @@
+[
+  {
+    "component": "Parking brake cable bracket bolt",
+    "spec_type": "Torque",
+    "value": "30",
+    "unit": "Nm",
+    "page_number": 734,
+    "source_chunk_id": "chunk_01069"
+  },
+  {
+    "component": "Spring shackle-to-frame nut",
+    "spec_type": "Torque",
+    "value": "185",
+    "unit": "lb-ft",
+    "page_number": 734,
+    "source_chunk_id": "chunk_01069"
+  },
+  {
+    "component": "Spring-to-frame nut",
+    "spec_type": "Torque",
+    "value": "350",
+    "unit": "lb-ft",
+    "page_number": 734,
+    "source_chunk_id": "chunk_01069"
+  },
+  {
+    "component": "Tie-rod end nut",
+    "spec_type": "Torque",
+    "value": "115",
+    "unit": "lb-ft",
+    "page_number": 734,
+    "source_chunk_id": "chunk_01069"
+  },
+  {
+    "component": "Upper ball joint nut",
+    "spec_type": "Torque",
+    "value": "150",
+    "unit": "lb-ft",
+    "page_number": 734,
+    "source_chunk_id": "chunk_01069"
+  },
+  {
+    "component": "Differential bearing cap bolt",
+    "spec_type": "Torque",
+    "value": "112",
+    "unit": "lb-ft",
+    "page_number": 734,
+    "source_chunk_id": "chunk_01069"
+  }
+]
