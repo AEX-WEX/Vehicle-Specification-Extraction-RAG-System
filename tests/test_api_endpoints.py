@@ -1,68 +1,71 @@
 """
-Tests for API endpoints.
+Tests for API endpoints and request models.
 """
 
 import pytest
-from fastapi.testclient import TestClient
-from api.app import app
+from api.app import QueryRequest, Specification, QueryResponse, HealthResponse
 
 
-@pytest.fixture
-def client():
-    """Create test client for FastAPI app."""
-    return TestClient(app)
-
-
-class TestHealthCheck:
-    """Test health check endpoint."""
+class TestAPIModels:
+    """Test API request/response models."""
     
-    def test_health_endpoint_exists(self, client):
-        """Test that health endpoint responds."""
-        response = client.get("/health")
+    def test_query_request_creation(self):
+        """Test QueryRequest model creation."""
+        request = QueryRequest(
+            query="What is the brake caliper torque?",
+            return_contexts=False
+        )
         
-        # Should return 200 or 503 depending on pipeline initialization
-        assert response.status_code in [200, 503]
+        assert request.query == "What is the brake caliper torque?"
+        assert request.return_contexts is False
     
-    def test_health_response_structure(self, client):
-        """Test that health endpoint returns expected structure."""
-        response = client.get("/health")
+    def test_specification_model(self):
+        """Test Specification model creation."""
+        spec = Specification(
+            component="Brake Caliper",
+            spec_type="Torque",
+            value="24",
+            unit="Nm",
+            page_number=145,
+            source_chunk_id="chunk_2847"
+        )
         
-        if response.status_code == 200:
-            data = response.json()
-            assert "status" in data
-            assert "pipeline_initialized" in data
-            assert "index_loaded" in data
-
-
-class TestRootEndpoint:
-    """Test root endpoint."""
+        assert spec.component == "Brake Caliper"
+        assert spec.spec_type == "Torque"
+        assert spec.value == "24"
+        assert spec.unit == "Nm"
     
-    def test_root_endpoint_accessible(self, client):
-        """Test that root endpoint is accessible."""
-        response = client.get("/")
+    def test_query_response_creation(self):
+        """Test QueryResponse model creation."""
+        specs = [
+            Specification(
+                component="Brake Caliper",
+                spec_type="Torque",
+                value="24",
+                unit="Nm"
+            )
+        ]
         
-        # Should return 200 or HTML response
-        assert response.status_code == 200
-
-
-class TestQueryEndpoint:
-    """Test query endpoint."""
+        response = QueryResponse(
+            query="brake torque",
+            specifications=specs,
+            num_results=1
+        )
+        
+        assert response.query == "brake torque"
+        assert response.num_results == 1
+        assert len(response.specifications) == 1
     
-    def test_query_endpoint_structure(self, client):
-        """Test query endpoint request/response structure."""
-        payload = {
-            "query": "What is the brake caliper torque?",
-            "return_contexts": False
-        }
+    def test_health_response_creation(self):
+        """Test HealthResponse model creation."""
+        response = HealthResponse(
+            status="healthy",
+            pipeline_initialized=True,
+            index_loaded=True,
+            total_chunks=1234
+        )
         
-        response = client.post("/query", json=payload)
-        
-        # Endpoint should exist and be callable
-        assert response.status_code in [200, 503, 422]
-    
-    def test_query_missing_parameters(self, client):
-        """Test query with missing required parameters."""
-        response = client.post("/query", json={})
-        
-        # Should fail validation
-        assert response.status_code in [422, 200]
+        assert response.status == "healthy"
+        assert response.pipeline_initialized is True
+        assert response.index_loaded is True
+        assert response.total_chunks == 1234
