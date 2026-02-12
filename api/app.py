@@ -6,7 +6,7 @@ REST API for vehicle specification extraction.
 
 import os
 import logging
-from typing import List, Optional
+from typing import Optional
 from pathlib import Path
 from contextlib import asynccontextmanager
 
@@ -14,10 +14,18 @@ from fastapi import FastAPI, HTTPException, UploadFile, File, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from pydantic import BaseModel, Field
 import uvicorn
 
-from src.pipeline import VehicleSpecRAGPipeline, load_indexed_pdf_metadata
+from src.pipeline import VehicleSpecRAGPipeline
+from src.utils import load_indexed_pdf_metadata
+from api.models import (
+    QueryRequest,
+    QueryResponse,
+    Specification,
+    IndexRequest,
+    IndexResponse,
+    HealthResponse,
+)
 
 # Configure logging
 logging.basicConfig(
@@ -79,53 +87,6 @@ app.add_middleware(
 static_dir = Path(__file__).parent.parent / "static"
 if static_dir.exists():
     app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
-
-
-# Pydantic models
-class QueryRequest(BaseModel):
-    """Request model for specification query."""
-    query: str = Field(..., description="Natural language query for specifications")
-    top_k: Optional[int] = Field(None, description="Number of results to retrieve")
-    return_contexts: bool = Field(False, description="Whether to return retrieved contexts")
-
-
-class Specification(BaseModel):
-    """Model for extracted specification."""
-    component: str
-    spec_type: str
-    value: str
-    unit: str
-    page_number: Optional[int] = None
-    source_chunk_id: Optional[str] = None
-
-
-class QueryResponse(BaseModel):
-    """Response model for specification query."""
-    query: str
-    specifications: List[Specification]
-    num_results: int
-    message: Optional[str] = None
-
-
-class IndexRequest(BaseModel):
-    """Request model for index building."""
-    pdf_path: str = Field(..., description="Path to PDF file")
-    force_rebuild: bool = Field(False, description="Force rebuild of index")
-
-
-class IndexResponse(BaseModel):
-    """Response model for index building."""
-    status: str
-    message: str
-    num_chunks: Optional[int] = None
-
-
-class HealthResponse(BaseModel):
-    """Response model for health check."""
-    status: str
-    pipeline_initialized: bool
-    index_loaded: bool
-    total_chunks: Optional[int] = None
 
 
 # API Endpoints

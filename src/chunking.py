@@ -52,7 +52,7 @@ class SemanticChunker:
             self.separator_hierarchy = ["\n\n", "\n", ". ", " "]
         else:
             self.separator_hierarchy = separator_hierarchy
-            
+    
     def chunk_pages(self, pages: List[Dict[str, any]]) -> List[Chunk]:
         """
         Chunk multiple pages.
@@ -81,59 +81,18 @@ class SemanticChunker:
         logger.info(f"Created {len(all_chunks)} chunks from {len(pages)} pages")
         return all_chunks
     
-    # def chunk_text(self,
-    #                text: str,
-    #                page_number: int,
-    #                metadata: Optional[Dict] = None) -> List[Chunk]:
-    #     """
-    #     Chunk a single text with semantic boundaries.
-        
-    #     Args:
-    #         text: Text to chunk
-    #         page_number: Source page number
-    #         metadata: Additional metadata
-            
-    #     Returns:
-    #         List of Chunk objects
-    #     """
-    #     if not text or len(text) < self.min_chunk_size:
-    #         return []
-        
-    #     chunks = []
-    #     start_pos = 0
-        
-    #     while start_pos < len(text):
-    #         # Determine chunk end position
-    #         end_pos = min(start_pos + self.max_chunk_size, len(text))
-            
-    #         # If not at end of text, find semantic boundary
-    #         if end_pos < len(text):
-    #             end_pos = self._find_split_point(text, start_pos, end_pos)
-            
-    #         # Extract chunk
-    #         chunk_text = text[start_pos:end_pos].strip()
-            
-    #         if len(chunk_text) >= self.min_chunk_size:
-    #             chunk = Chunk(
-    #                 text=chunk_text,
-    #                 chunk_id="",  # Will be set by chunk_pages
-    #                 page_number=page_number,
-    #                 start_char=start_pos,
-    #                 end_char=end_pos,
-    #                 metadata=metadata or {}
-    #             )
-    #             chunks.append(chunk)
-            
-    #         # Move to next chunk with overlap
-    #         start_pos = end_pos - self.chunk_overlap
-            
-    #         # Ensure forward progress
-    #         if start_pos <= chunks[-1].start_char if chunks else 0:
-    #             start_pos = end_pos
-                
-    #     return chunks
-
     def chunk_text(self, text: str, page_number: int, metadata=None) -> List[Chunk]:
+        """
+        Split text into chunks with optional metadata.
+        
+        Args:
+            text: Text to chunk
+            page_number: Source page number
+            metadata: Additional metadata
+            
+        Returns:
+            List of Chunk objects
+        """
         if not text:
             return []
 
@@ -277,27 +236,4 @@ def create_chunker(strategy: str = "semantic", **kwargs) -> any:
         raise ValueError(f"Unknown chunking strategy: {strategy}")
 
 
-if __name__ == "__main__":
-    # Test chunking
-    sample_text = """
-    BRAKE SYSTEM SPECIFICATIONS
-    
-    The brake system consists of disc brakes on all four wheels.
-    
-    Brake Caliper Specifications:
-    - Front caliper mounting bolts: 35 Nm
-    - Rear caliper mounting bolts: 30 Nm
-    - Caliper guide pins: 25 Nm
-    
-    Brake Fluid Capacity:
-    Total system capacity: 1.2 liters
-    Use DOT 4 brake fluid only.
-    """
-    
-    chunker = SemanticChunker(min_chunk_size=50, max_chunk_size=200)
-    pages = [{"text": sample_text, "page_number": 1, "metadata": {}}]
-    chunks = chunker.chunk_pages(pages)
-    
-    print(f"Created {len(chunks)} chunks:")
-    for chunk in chunks:
-        print(f"\n{chunk.chunk_id}: {chunk.text[:100]}...")
+

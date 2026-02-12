@@ -1,0 +1,81 @@
+[
+  {
+    "timestamp": "2026-02-13T04:01:06.297789",
+    "method": "ollama",
+    "query": "Tire pressure",
+    "num_specs_extracted": 0,
+    "execution_time_ms": 12912.810564041138,
+    "success": false,
+    "error_message": "500 Server Error: Internal Server Error for url: http://localhost:11434/api/generate",
+    "ollama_available": true,
+    "confidence_scores": []
+  },
+  {
+    "timestamp": "2026-02-13T04:01:06.374887",
+    "method": "rule_based",
+    "query": "",
+    "num_specs_extracted": 0,
+    "execution_time_ms": 75.50883293151855,
+    "success": true,
+    "error_message": null,
+    "ollama_available": true,
+    "confidence_scores": []
+  },
+  {
+    "timestamp": "2026-02-13T04:01:50.858465",
+    "method": "ollama",
+    "query": "Brake torque specifications",
+    "num_specs_extracted": 0,
+    "execution_time_ms": 12810.621738433838,
+    "success": false,
+    "error_message": "500 Server Error: Internal Server Error for url: http://localhost:11434/api/generate",
+    "ollama_available": true,
+    "confidence_scores": []
+  },
+  {
+    "timestamp": "2026-02-13T04:01:50.940400",
+    "method": "rule_based",
+    "query": "",
+    "num_specs_extracted": 0,
+    "execution_time_ms": 80.9316635131836,
+    "success": true,
+    "error_message": null,
+    "ollama_available": true,
+    "confidence_scores": []
+  },
+  {
+    "timestamp": "2026-02-13T04:03:54.363700",
+    "method": "ollama",
+    "query": "Oil",
+    "num_specs_extracted": 0,
+    "execution_time_ms": 19360.013484954834,
+    "success": true,
+    "error_message": null,
+    "ollama_available": true,
+    "confidence_scores": []
+  },
+  {
+    "timestamp": "2026-02-13T04:03:54.406211",
+    "method": "rule_based",
+    "query": "",
+    "num_specs_extracted": 0,
+    "execution_time_ms": 42.00458526611328,
+    "success": true,
+    "error_message": null,
+    "ollama_available": true,
+    "confidence_scores": []
+  },
+  {
+    "timestamp": "2026-02-13T04:04:13.070206",
+    "method": "ollama",
+    "query": "engine oil",
+    "num_specs_extracted": 1,
+    "execution_time_ms": 8816.842555999756,
+    "success": true,
+    "error_message": null,
+    "ollama_available": true,
+    "confidence_scores": [
+      1.0
+    ]
+  }
+]

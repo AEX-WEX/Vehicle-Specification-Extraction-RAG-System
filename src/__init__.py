@@ -11,6 +11,14 @@ __author__ = "Vehicle Spec RAG Team"
 # Expose main pipeline interface
 from src.pipeline import VehicleSpecRAGPipeline, create_pipeline
 
+# Expose utility functions
+from src.utils import (
+    get_pdf_hash,
+    load_indexed_pdf_metadata,
+    save_indexed_pdf_metadata,
+    is_pdf_different,
+)
+
 # Expose core components for advanced usage
 from src.pdf_loader import load_pdf, PyMuPDFLoader, PDFMinerLoader, TextCleaner
 from src.chunking import Chunk, SemanticChunker, RecursiveChunker, create_chunker
@@ -30,6 +38,12 @@ __all__ = [
     # Main pipeline
     "VehicleSpecRAGPipeline",
     "create_pipeline",
+    
+    # Utilities
+    "get_pdf_hash",
+    "load_indexed_pdf_metadata",
+    "save_indexed_pdf_metadata",
+    "is_pdf_different",
     
     # PDF processing
     "load_pdf",

@@ -7,12 +7,15 @@ Handles structured extraction using LLMs.
 import json
 import logging
 import re
+import time
 from typing import List, Dict, Optional, Any
 from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
 from dotenv import load_dotenv
+from src.extractor_diagnostics import get_diagnostics
+
 load_dotenv()
 
 @dataclass
@@ -327,6 +330,8 @@ class OllamaExtractor:
             List of ExtractedSpec objects
         """
         logger.info(f"Extracting specifications for query: {query}")
+        start_time = time.time()
+        diagnostics = get_diagnostics()
 
         # Build prompt
         prompt = self._build_extraction_prompt(query, contexts)
@@ -344,11 +349,31 @@ class OllamaExtractor:
                 logger.info("Ollama found components but incomplete values. Using hybrid extraction...")
                 specs = self._hybrid_extraction(specs, contexts, query)
 
-            logger.info(f"Extracted {len(specs)} specifications")
+            execution_time = (time.time() - start_time) * 1000  # Convert to ms
+            confidence_scores = [s.confidence for s in specs]
+            diagnostics.record_extraction(
+                method="ollama",
+                query=query,
+                num_specs=len(specs),
+                execution_time_ms=execution_time,
+                success=True,
+                confidence_scores=confidence_scores,
+            )
+            
+            logger.info(f"Extracted {len(specs)} specifications using Ollama")
             return specs
 
         except Exception as e:
-            logger.error(f"Extraction error: {str(e)}")
+            execution_time = (time.time() - start_time) * 1000
+            diagnostics.record_extraction(
+                method="ollama",
+                query=query,
+                num_specs=0,
+                execution_time_ms=execution_time,
+                success=False,
+                error_message=str(e),
+            )
+            logger.error(f"Ollama extraction error: {str(e)}")
             return []
 
     def _hybrid_extraction(self, partial_specs: List[ExtractedSpec],
@@ -782,76 +807,175 @@ class RuleBasedExtractor:
             (r'([^:]+\b(?:speed|rpm)[^:]*?):\s*(\d+\.?\d*)\s*(rpm|k?m/h|mph)', 'Speed'),
         ]
 
-    def extract(self, contexts: List[Dict]) -> List[ExtractedSpec]:
+    def extract(self, contexts: List[Dict], query: str = "") -> List[ExtractedSpec]:
         """
         Extract specifications using regex patterns.
 
         Args:
             contexts: List of context dictionaries with 'text', 'chunk_id', 'page_number'
+            query: User query (for logging/diagnostics)
 
         Returns:
             List of ExtractedSpec objects
         """
+        start_time = time.time()
+        diagnostics = get_diagnostics()
         specs = []
         seen = set()  # Track seen specs to avoid duplicates
 
-        for ctx in contexts:
-            text = ctx['text']
+        try:
+            for ctx in contexts:
+                text = ctx['text']
 
-            for pattern, spec_type in self.patterns:
-                try:
-                    matches = re.finditer(pattern, text, re.IGNORECASE)
+                for pattern, spec_type in self.patterns:
+                    try:
+                        matches = re.finditer(pattern, text, re.IGNORECASE)
 
-                    for match in matches:
-                        groups = match.groups()
+                        for match in matches:
+                            groups = match.groups()
 
-                        # Parse based on group count
-                        if spec_type == 'Capacity' and len(groups) == 3:
-                            component = groups[0].strip()
-                            value = groups[2].strip() if groups[2] else ""
-                            unit = groups[2] if groups[2] else ""
-                        elif len(groups) >= 3:
-                            component = groups[0].strip()
-                            value = groups[1].strip() if groups[1] else ""
-                            unit = groups[2].strip() if groups[2] else ""
-                        else:
-                            continue
+                            # Parse based on group count
+                            if spec_type == 'Capacity' and len(groups) == 3:
+                                component = groups[0].strip()
+                                value = groups[2].strip() if groups[2] else ""
+                                unit = groups[2] if groups[2] else ""
+                            elif len(groups) >= 3:
+                                component = groups[0].strip()
+                                value = groups[1].strip() if groups[1] else ""
+                                unit = groups[2].strip() if groups[2] else ""
+                            else:
+                                continue
 
-                        # Validate
-                        if not component or not value or not unit:
-                            continue
+                            # Validate
+                            if not component or not value or not unit:
+                                continue
 
-                        # Create unique key to avoid duplicates
-                        key = (component.lower(), value, unit.lower())
-                        if key in seen:
-                            continue
-                        seen.add(key)
+                            # Create unique key to avoid duplicates
+                            key = (component.lower(), value, unit.lower())
+                            if key in seen:
+                                continue
+                            seen.add(key)
 
-                        try:
-                            # Validate value is numeric
-                            float(value)
-                        except ValueError:
-                            logger.debug(f"Rule-based: Skipping non-numeric value: {value}")
-                            continue
+                            try:
+                                # Validate value is numeric
+                                float(value)
+                            except ValueError:
+                                logger.debug(f"Rule-based: Skipping non-numeric value: {value}")
+                                continue
 
-                        spec = ExtractedSpec(
-                            component=component,
-                            spec_type=spec_type,
-                            value=value,
-                            unit=unit,
-                            source_chunk_id=ctx['chunk_id'],
-                            page_number=ctx['page_number'],
-                            confidence=0.7  # Lower confidence for rule-based extraction
-                        )
-                        specs.append(spec)
-                        logger.debug(f"Rule-based: Found {component} ({spec_type}): {value} {unit}")
+                            spec = ExtractedSpec(
+                                component=component,
+                                spec_type=spec_type,
+                                value=value,
+                                unit=unit,
+                                source_chunk_id=ctx['chunk_id'],
+                                page_number=ctx['page_number'],
+                                confidence=0.7  # Lower confidence for rule-based extraction
+                            )
+                            specs.append(spec)
+                            logger.debug(f"Rule-based: Found {component} ({spec_type}): {value} {unit}")
 
-                except Exception as e:
-                    logger.debug(f"Rule-based: Pattern error for {spec_type}: {e}")
-                    continue
+                    except Exception as e:
+                        logger.debug(f"Rule-based: Pattern error for {spec_type}: {e}")
+                        continue
+            
+            execution_time = (time.time() - start_time) * 1000  # Convert to ms
+            confidence_scores = [s.confidence for s in specs]
+            diagnostics.record_extraction(
+                method="rule_based",
+                query=query,
+                num_specs=len(specs),
+                execution_time_ms=execution_time,
+                success=True,
+                confidence_scores=confidence_scores,
+            )
 
-        logger.info(f"Rule-based extraction found {len(specs)} specifications")
-        return specs
+            logger.info(f"Rule-based extraction found {len(specs)} specifications")
+            return specs
+            
+        except Exception as e:
+            execution_time = (time.time() - start_time) * 1000
+            diagnostics.record_extraction(
+                method="rule_based",
+                query=query,
+                num_specs=len(specs),
+                execution_time_ms=execution_time,
+                success=False,
+                error_message=str(e),
+            )
+            logger.error(f"Rule-based extraction error: {str(e)}")
+            return specs
+
+
+class SmartExtractor:
+    """
+    Smart extractor that:
+    1. Checks if Ollama is available
+    2. Tries Ollama first if available
+    3. Falls back to rule-based extraction if Ollama fails or is unavailable
+    4. Tracks performance and provides diagnostics
+    """
+
+    def __init__(self):
+        """Initialize smart extractor."""
+        self.diagnostics = get_diagnostics()
+        self.ollama_extractor = OllamaExtractor()
+        self.rule_extractor = RuleBasedExtractor()
+        
+        logger.info(f"SmartExtractor initialized (Ollama available: {self.diagnostics.ollama_status})")
+
+    def extract(self, query: str, contexts: List[Dict]) -> List[ExtractedSpec]:
+        """
+        Intelligently extract specifications.
+
+        Priority order:
+        1. Try Ollama if available
+        2. Fall back to rule-based if Ollama fails/unavailable
+        3. Return best results
+
+        Args:
+            query: User query
+            contexts: Context dictionaries
+
+        Returns:
+            List of ExtractedSpec objects
+        """
+        logger.info(f"SmartExtractor: Processing query '{query[:50]}...'")
+        logger.info(f"SmartExtractor: Ollama status: {'Available' if self.diagnostics.ollama_status else 'Unavailable'}")
+
+        # Try Ollama first if available
+        if self.diagnostics.ollama_status:
+            logger.info("SmartExtractor: Attempting Ollama extraction...")
+            try:
+                specs = self.ollama_extractor.extract(query, contexts, validate=True)
+                
+                if specs:
+                    logger.info(f"SmartExtractor: ✓ Ollama succeeded with {len(specs)} specs")
+                    return specs
+                else:
+                    logger.warning("SmartExtractor: Ollama returned 0 specs, trying rule-based...")
+            except Exception as e:
+                logger.warning(f"SmartExtractor: Ollama failed ({type(e).__name__}), trying rule-based...")
+        else:
+            logger.info("SmartExtractor: Ollama unavailable, using rule-based extraction")
+
+        # Fall back to rule-based
+        logger.info("SmartExtractor: Using rule-based extraction...")
+        try:
+            specs = self.rule_extractor.extract(contexts, query=query)
+            logger.info(f"SmartExtractor: ✓ Rule-based succeeded with {len(specs)} specs")
+            return specs
+        except Exception as e:
+            logger.error(f"SmartExtractor: Rule-based extraction also failed: {e}")
+            return []
+
+    def get_diagnostics_report(self) -> Dict:
+        """Get performance diagnostics report."""
+        return self.diagnostics.get_recommendation()
+
+    def print_diagnostics(self) -> None:
+        """Print diagnostics report."""
+        self.diagnostics.print_report()
 
 
 if __name__ == "__main__":
