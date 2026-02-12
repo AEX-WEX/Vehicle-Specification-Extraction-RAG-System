@@ -1,0 +1,9 @@
+{
+  "pdf_filename": "sample-service-manual_1.pdf",
+  "pdf_path": "data\\sample-service-manual_1.pdf",
+  "pdf_hash": "61a3fea193d0597ba0d9f6ba426f14c2",
+  "indexed_at": "2026-02-11T19:19:18.708605",
+  "num_chunks": 1392,
+  "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+  "index_type": "IndexFlatL2"
+}
