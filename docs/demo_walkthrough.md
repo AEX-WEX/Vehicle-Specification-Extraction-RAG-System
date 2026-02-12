@@ -10,7 +10,7 @@ The system extracts structured vehicle specifications from service manuals and a
 
 The application UI allows users to upload a vehicle service manual and query specifications.
 
-![Application UI](assets/ui_overview.png)
+![Application UI](../assets/ui_overview.png)
 
 Once a manual is uploaded, the system:
 - Extracts text from the PDF
@@ -32,7 +32,7 @@ engine oil
 
 The retriever performs similarity search on the vector database and sends relevant context to the LLM extraction pipeline.
 
-![Search Interface](assets/search_example.png)
+![Search Interface](../assets/search_example.png)
 
 ---
 
@@ -48,7 +48,7 @@ Example result:
 - Page Number: 515
 - Source Chunk ID: chunk_00746
 
-![Extraction Result](assets/extraction_result.png)
+![Extraction Result](../assets/extraction_result.png)
 
 This demonstrates retrieval-grounded specification extraction.
 
@@ -71,7 +71,9 @@ Example output:
     "source_chunk_id": "chunk_00746"
   }
 ]
-![JSON OUTPUT](assets/json_output.png)
+```
+
+![JSON OUTPUT](../assets/json_output.png)
 
 ## 5. CSV Export
 
@@ -79,4 +81,4 @@ The system also supports CSV export for spreadsheet workflows and downstream pro
 
 Columns: Component Type Value Unit Page Source
 
-![CSV OUTPUT](assets/csv_output.png)
+![CSV OUTPUT](../assets/csv_output.png)

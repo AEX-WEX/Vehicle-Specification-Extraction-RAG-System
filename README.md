@@ -20,6 +20,8 @@ This system combines dense vector retrieval with local LLM inference to extract 
 - **Error Handling**: Comprehensive fallback mechanisms for extraction failures
 - **Production Ready**: Logging, health checks, background processing, and monitoring
 
+Check out the **[Demo Walkthrough](docs/demo_walkthrough.md)** for a visual guide through the system!
+
 ## Quick Start
 
 ### Prerequisites
@@ -188,6 +190,12 @@ Complete REST API documentation with examples:
 - **GET /stats** - Pipeline statistics
 
 See [API_DOCUMENTATION.md](API_DOCUMENTATION.md) for detailed endpoint reference.
+
+## Documentation
+
+- **[Architecture](ARCHITECTURE.md)** - Detailed system design and data flow
+- **[Demo Walkthrough](docs/demo_walkthrough.md)** - End-to-end workflow demonstration with examples
+- **[API Documentation](API_DOCUMENTATION.md)** - REST API reference and usage
 
 ## Extraction Performance
 
