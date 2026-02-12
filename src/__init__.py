@@ -25,7 +25,7 @@ from src.chunking import Chunk, SemanticChunker, RecursiveChunker, create_chunke
 from src.embeddings import EmbeddingModel, CachedEmbeddingModel
 from src.vector_store import FAISSVectorStore
 from src.retriever import Retriever, HybridRetriever
-from src.extractor import LLMExtractor, ExtractedSpec, RuleBasedExtractor
+from src.extractor import ExtractedSpec, RuleBasedExtractor, OllamaExtractor, SmartExtractor
 from src.evaluation import (
     SpecificationEvaluator,
     RetrievalEvaluator,
@@ -69,7 +69,7 @@ __all__ = [
     "HybridRetriever",
     
     # Extraction
-    "LLMExtractor",
+
     "ExtractedSpec",
     "RuleBasedExtractor",
     

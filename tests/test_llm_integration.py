@@ -1,4 +1,4 @@
-"""Tests for LLM integration (Ollama, OpenAI, etc)."""
+"""Tests for Ollama LLM integration."""
 
 import requests
 import json

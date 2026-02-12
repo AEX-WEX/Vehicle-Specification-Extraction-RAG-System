@@ -77,5 +77,18 @@
     "confidence_scores": [
       1.0
     ]
+  },
+  {
+    "timestamp": "2026-02-13T04:07:06.843950",
+    "method": "ollama",
+    "query": "bolts",
+    "num_specs_extracted": 1,
+    "execution_time_ms": 39200.70433616638,
+    "success": true,
+    "error_message": null,
+    "ollama_available": true,
+    "confidence_scores": [
+      1.0
+    ]
   }
 ]

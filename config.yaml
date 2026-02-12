@@ -50,36 +50,12 @@ retrieval:
   
 # LLM Configuration
 llm:
-  provider: "ollama"  # Options: "ollama", "openai", "anthropic", "cohere"
-  model: "llama3"  # For Ollama
+  provider: "ollama"  # Ollama is the only supported provider
+  model: "llama3"  # Ollama model
   base_url: "http://localhost:11434"  # Ollama endpoint
   temperature: 0.0
   max_tokens: 500
   timeout: 60
-
-# Alternative configurations (uncomment to use):
-# llm:
-#   provider: "openai"
-#   model: "gpt-3.5-turbo"
-#   temperature: 0.0
-#   max_tokens: 500
-#   timeout: 30
-
-# For Anthropic:
-# llm:
-#   provider: "anthropic"
-#   model: "claude-3-sonnet-20240229"
-#   temperature: 0.0
-#   max_tokens: 500
-#   timeout: 30
-
-old_llm_section:
-  provider: "ollama"           # Changed from "openai"
-  model: "llama3"              # Changed from "gpt-3.5-turbo"
-  temperature: 0.0
-  max_tokens: 500
-  timeout: 60                  # Increased for local model
-  base_url: "http://localhost:11434"  # Added for Ollama
 
   
 # Extraction

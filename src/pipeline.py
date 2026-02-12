@@ -15,7 +15,7 @@ from src.chunking import create_chunker, Chunk
 from src.embeddings import EmbeddingModel
 from src.vector_store import FAISSVectorStore
 from src.retriever import Retriever
-from src.extractor import LLMExtractor, ExtractedSpec
+from src.extractor import ExtractedSpec, OllamaExtractor
 from src.utils import (
     get_pdf_hash,
     load_indexed_pdf_metadata,
@@ -215,23 +215,7 @@ class VehicleSpecRAGPipeline:
                 logger.debug("Ollama extractor initialized")
                 
             else:
-                # Use OpenAI/Anthropic extractor
-                api_key = None
-                if provider == 'openai':
-                    api_key = os.getenv('OPENAI_API_KEY')
-                elif provider == 'anthropic':
-                    api_key = os.getenv('ANTHROPIC_API_KEY')
-                
-                from src.extractor import LLMExtractor
-                
-                self.extractor = LLMExtractor(
-                    provider=provider,
-                    model=self.config['llm']['model'],
-                    temperature=self.config['llm']['temperature'],
-                    max_tokens=self.config['llm']['max_tokens'],
-                    api_key=api_key
-                )
-                logger.debug("Extractor initialized")
+                raise ValueError(f"Unsupported LLM provider: {provider}. Only 'ollama' is supported.")
 
     
     def query(self, query_text: str, return_contexts: bool = False) -> Dict:

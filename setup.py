@@ -36,8 +36,7 @@ install_requires = [
     "transformers>=4.30.0",
     
     # LLM Integration
-    "openai>=1.12.0",
-    "anthropic>=0.18.1",
+    "requests>=2.31.0",
     
     # API Framework
     "fastapi>=0.109.2",

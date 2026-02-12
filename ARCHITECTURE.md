@@ -233,7 +233,7 @@ Retrieved Context + Query
     │   ├── Query
     │   └── JSON schema
     │
-    ├─► Call LLM (Ollama/OpenAI/etc)
+    ├─► Call LLM (Ollama)
     │   ├── Temperature: 0.0 (deterministic)
     │   ├── Max tokens: 500
     │   └── Timeout: 60s
@@ -258,25 +258,11 @@ Retrieved Context + Query
 
 **LLM Providers Supported**:
 
-1. **Ollama** (Default)
+1. **Ollama** (Only Supported Provider)
    - Local inference
    - Model: Llama3
    - No API costs
    - Complete privacy
-
-2. **OpenAI**
-   - GPT-3.5-turbo, GPT-4
-   - API-based
-   - Higher accuracy
-
-3. **Anthropic**
-   - Claude models
-   - API-based
-   - Long context window
-
-4. **Cohere**
-   - Generate API
-   - API-based
 
 **Prompt Template**:
 ```
