@@ -6,6 +6,15 @@
 
 An AI-powered Retrieval-Augmented Generation (RAG) system for extracting structured vehicle specifications from PDF service manuals using local language models.
 
+---
+
+**📚 Documentation:**
+- [📖 UI Walkthrough](docs/UI_WALKTHROUGH.md) - Visual guide with examples
+- [🏗️ Architecture](ARCHITECTURE.md) - System design
+- [🔌 API Reference](API_DOCUMENTATION.md) - REST endpoints
+
+---
+
 ## Overview
 
 This system combines dense vector retrieval with local LLM inference to extract precise vehicle specifications from service manuals. It achieves more than 90% extraction success rates even on complex 800+ page documents, with structured JSON output and comprehensive error handling.
@@ -20,7 +29,7 @@ This system combines dense vector retrieval with local LLM inference to extract 
 - **Error Handling**: Comprehensive fallback mechanisms for extraction failures
 - **Production Ready**: Logging, health checks, background processing, and monitoring
 
-Check out the **[Demo Walkthrough](docs/demo_walkthrough.md)** for a visual guide through the system!
+Check out the **[UI Walkthrough](docs/UI_WALKTHROUGH.md)** for a visual guide through the system!
 
 ## Quick Start
 
@@ -193,8 +202,8 @@ See [API_DOCUMENTATION.md](API_DOCUMENTATION.md) for detailed endpoint reference
 
 ## Documentation
 
+- **[UI Walkthrough](docs/UI_WALKTHROUGH.md)** - End-to-end workflow demonstration with examples
 - **[Architecture](ARCHITECTURE.md)** - Detailed system design and data flow
-- **[Demo Walkthrough](docs/demo_walkthrough.md)** - End-to-end workflow demonstration with examples
 - **[API Documentation](API_DOCUMENTATION.md)** - REST API reference and usage
 
 ## Extraction Performance
