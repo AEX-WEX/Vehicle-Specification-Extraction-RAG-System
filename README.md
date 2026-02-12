@@ -84,7 +84,11 @@ python main.py query "What is the brake caliper torque?"
 python main.py status
 
 # Export results
-python main.py query "Engine specifications" --output results.json --format json
+python main.py query "bolt" --output results.json --format json
+
+# CSV FORMAT
+python main.py query "bolt" --output results.csv --format csv
+
 ```
 
 #### REST API

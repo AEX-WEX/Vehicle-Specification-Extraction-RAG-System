@@ -1,0 +1,5 @@
+component,spec_type,value,unit,page_number,source_chunk_id
+Shock absorber nuts,Torque,185,lb-ft,259,chunk_00425
+Spring shackle-to-frame nut,Torque,136,lb-in,259,chunk_00425
+Rear driveshaft center bearing bolts,Torque,103,Nm,259,chunk_00425
+Front driveshaft flange-to-pinion flange bolts,Torque,55,None,259,chunk_00425
