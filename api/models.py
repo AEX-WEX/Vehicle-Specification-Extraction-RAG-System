@@ -23,6 +23,7 @@ class Specification(BaseModel):
     unit: str
     page_number: Optional[int] = None
     source_chunk_id: Optional[str] = None
+    confidence: float = Field(default=0.8, description="Confidence score (0.0-1.0)")
 
 
 class QueryResponse(BaseModel):
@@ -31,6 +32,8 @@ class QueryResponse(BaseModel):
     query: str
     specifications: List[Specification]
     num_results: int
+    extraction_method: Optional[str] = Field(None, description="Method used (ollama or rule_based)")
+    average_confidence: float = Field(default=0.0, description="Average confidence of results (0.0-1.0)")
     message: Optional[str] = None
 
 

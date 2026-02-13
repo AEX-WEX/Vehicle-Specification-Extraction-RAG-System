@@ -90,5 +90,125 @@
     "confidence_scores": [
       1.0
     ]
+  },
+  {
+    "timestamp": "2026-02-13T04:24:33.537455",
+    "method": "ollama",
+    "query": "Force",
+    "num_specs_extracted": 0,
+    "execution_time_ms": 12220.436096191406,
+    "success": false,
+    "error_message": "500 Server Error: Internal Server Error for url: http://localhost:11434/api/generate",
+    "ollama_available": true,
+    "confidence_scores": []
+  },
+  {
+    "timestamp": "2026-02-13T04:24:33.572211",
+    "method": "rule_based",
+    "query": "",
+    "num_specs_extracted": 5,
+    "execution_time_ms": 32.752275466918945,
+    "success": true,
+    "error_message": null,
+    "ollama_available": true,
+    "confidence_scores": [
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7
+    ]
+  },
+  {
+    "timestamp": "2026-02-13T04:36:16.807565",
+    "method": "ollama",
+    "query": "force",
+    "num_specs_extracted": 0,
+    "execution_time_ms": 11249.388456344604,
+    "success": false,
+    "error_message": "500 Server Error: Internal Server Error for url: http://localhost:11434/api/generate",
+    "ollama_available": true,
+    "confidence_scores": []
+  },
+  {
+    "timestamp": "2026-02-13T04:36:16.874988",
+    "method": "rule_based",
+    "query": "force",
+    "num_specs_extracted": 5,
+    "execution_time_ms": 63.00997734069824,
+    "success": true,
+    "error_message": null,
+    "ollama_available": true,
+    "confidence_scores": [
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7
+    ]
+  },
+  {
+    "timestamp": "2026-02-13T21:40:39.894488",
+    "method": "ollama",
+    "query": "force",
+    "num_specs_extracted": 4,
+    "execution_time_ms": 41027.345418930054,
+    "success": true,
+    "error_message": null,
+    "ollama_available": true,
+    "confidence_scores": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "timestamp": "2026-02-13T21:40:39.997217",
+    "method": "rule_based",
+    "query": "force",
+    "num_specs_extracted": 5,
+    "execution_time_ms": 97.34129905700684,
+    "success": true,
+    "error_message": null,
+    "ollama_available": true,
+    "confidence_scores": [
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7
+    ]
+  },
+  {
+    "timestamp": "2026-02-13T21:54:39.787586",
+    "method": "ollama",
+    "query": "Force",
+    "num_specs_extracted": 2,
+    "execution_time_ms": 25338.56701850891,
+    "success": true,
+    "error_message": null,
+    "ollama_available": true,
+    "confidence_scores": [
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "timestamp": "2026-02-13T21:54:39.820271",
+    "method": "rule_based",
+    "query": "Force",
+    "num_specs_extracted": 5,
+    "execution_time_ms": 32.1657657623291,
+    "success": true,
+    "error_message": null,
+    "ollama_available": true,
+    "confidence_scores": [
+      0.7,
+      0.7,
+      0.7,
+      0.7,
+      0.7
+    ]
   }
 ]

@@ -293,6 +293,8 @@ async def query_specifications(request: QueryRequest):
             query=result['query'],
             specifications=specs,
             num_results=result['num_results'],
+            extraction_method=result.get('extraction_method'),
+            average_confidence=result.get('average_confidence', 0.0),
             message=result.get('message')
         )
     

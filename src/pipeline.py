@@ -198,21 +198,16 @@ class VehicleSpecRAGPipeline:
         logger.debug("Retriever initialized")
     
     def _init_extractor(self):
-        """Initialize LLM extractor."""
+        """Initialize SmartExtractor (compares Ollama vs rule-based)."""
         if self.extractor is None:
             provider = self.config['llm']['provider']
             
             if provider == 'ollama':
-                # Use Ollama extractor
-                from src.extractor import OllamaExtractor
+                # Use SmartExtractor which compares Ollama and rule-based
+                from src.extractor import SmartExtractor
                 
-                self.extractor = OllamaExtractor(
-                    model=self.config['llm']['model'],
-                    temperature=self.config['llm']['temperature'],
-                    max_tokens=self.config['llm']['max_tokens'],
-                    base_url=self.config['llm'].get('base_url', 'http://localhost:11434')
-                )
-                logger.debug("Ollama extractor initialized")
+                self.extractor = SmartExtractor()
+                logger.debug("SmartExtractor initialized (will compare Ollama vs rule-based)")
                 
             else:
                 raise ValueError(f"Unsupported LLM provider: {provider}. Only 'ollama' is supported.")
@@ -221,6 +216,12 @@ class VehicleSpecRAGPipeline:
     def query(self, query_text: str, return_contexts: bool = False) -> Dict:
         """
         Query the pipeline for specifications.
+        
+        SmartExtractor will:
+        - Try both Ollama and rule-based extraction
+        - Compare results
+        - Return the BEST results
+        - Track which method was used
         
         Args:
             query_text: User query
@@ -247,22 +248,22 @@ class VehicleSpecRAGPipeline:
             return {
                 "query": query_text,
                 "specifications": [],
+                "extraction_method": None,
+                "average_confidence": 0.0,
                 "message": "No relevant information found in the manual."
             }
         
-        # Extract specifications
-        specs = self.extractor.extract(
+        # Extract specifications with method tracking
+        metadata = self.extractor.extract_with_metadata(
             query=query_text,
-            contexts=contexts,
-            validate=self.config['extraction']['validate_output']
+            contexts=contexts
         )
-
-        # --- ADD THIS BLOCK ---
-        if not specs and contexts:
-            from src.extractor import RuleBasedExtractor
-            fallback_extractor = RuleBasedExtractor()
-            specs = fallback_extractor.extract(contexts)
-            logger.info(f"Used rule-based extraction: {len(specs)} specs")
+        
+        specs = metadata["specs"]
+        method_used = metadata["method_used"]
+        avg_confidence = metadata["average_confidence"]
+        
+        logger.info(f"Extraction complete: {len(specs)} specs via {method_used} (confidence: {avg_confidence:.2f})")
         
         # Format results
         result = {
@@ -274,17 +275,20 @@ class VehicleSpecRAGPipeline:
                     "value": spec.value,
                     "unit": spec.unit,
                     "page_number": spec.page_number,
-                    "source_chunk_id": spec.source_chunk_id
+                    "source_chunk_id": spec.source_chunk_id,
+                    "confidence": spec.confidence
                 }
                 for spec in specs
             ],
-            "num_results": len(specs)
+            "num_results": len(specs),
+            "extraction_method": method_used,
+            "average_confidence": avg_confidence,
+            "message": metadata["message"]
         }
         
         if return_contexts:
             result["contexts"] = contexts
         
-        logger.info(f"Query complete: {len(specs)} specifications extracted")
         return result
     
     def get_status(self) -> Dict:

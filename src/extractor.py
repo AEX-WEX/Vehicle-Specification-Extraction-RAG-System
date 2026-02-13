@@ -652,10 +652,10 @@ class RuleBasedExtractor:
 class SmartExtractor:
     """
     Smart extractor that:
-    1. Checks if Ollama is available
-    2. Tries Ollama first if available
-    3. Falls back to rule-based extraction if Ollama fails or is unavailable
-    4. Tracks performance and provides diagnostics
+    1. Runs both Ollama (if available) and rule-based extraction
+    2. Compares results and returns the BEST one
+    3. Tracks which method performed better
+    4. Provides detailed diagnostics for UI display
     """
 
     def __init__(self):
@@ -663,53 +663,187 @@ class SmartExtractor:
         self.diagnostics = get_diagnostics()
         self.ollama_extractor = OllamaExtractor()
         self.rule_extractor = RuleBasedExtractor()
+        self.last_method_used = None  # Track which method was best
         
         logger.info(f"SmartExtractor initialized (Ollama available: {self.diagnostics.ollama_status})")
 
     def extract(self, query: str, contexts: List[Dict]) -> List[ExtractedSpec]:
         """
-        Intelligently extract specifications.
+        Intelligently extract specifications by comparing methods.
 
-        Priority order:
-        1. Try Ollama if available
-        2. Fall back to rule-based if Ollama fails/unavailable
-        3. Return best results
+        Strategy:
+        1. If Ollama available: try Ollama AND rule-based
+        2. Compare results: number of specs, confidence scores, relevance
+        3. Return the BEST results
+        4. If Ollama unavailable: use rule-based only
 
         Args:
             query: User query
             contexts: Context dictionaries
 
         Returns:
-            List of ExtractedSpec objects
+            List of ExtractedSpec objects (from best method)
         """
         logger.info(f"SmartExtractor: Processing query '{query[:50]}...'")
         logger.info(f"SmartExtractor: Ollama status: {'Available' if self.diagnostics.ollama_status else 'Unavailable'}")
 
-        # Try Ollama first if available
+        ollama_specs = []
+        rule_specs = []
+        
+        # Try Ollama if available
         if self.diagnostics.ollama_status:
             logger.info("SmartExtractor: Attempting Ollama extraction...")
             try:
-                specs = self.ollama_extractor.extract(query, contexts, validate=True)
-                
-                if specs:
-                    logger.info(f"SmartExtractor: ✓ Ollama succeeded with {len(specs)} specs")
-                    return specs
-                else:
-                    logger.warning("SmartExtractor: Ollama returned 0 specs, trying rule-based...")
+                ollama_specs = self.ollama_extractor.extract(query, contexts, validate=True)
+                logger.info(f"SmartExtractor: Ollama returned {len(ollama_specs)} specs")
             except Exception as e:
-                logger.warning(f"SmartExtractor: Ollama failed ({type(e).__name__}), trying rule-based...")
+                logger.warning(f"SmartExtractor: Ollama failed ({type(e).__name__}): {e}")
+                ollama_specs = []
         else:
-            logger.info("SmartExtractor: Ollama unavailable, using rule-based extraction")
+            logger.info("SmartExtractor: Ollama unavailable")
 
-        # Fall back to rule-based
-        logger.info("SmartExtractor: Using rule-based extraction...")
+        # Always try rule-based for comparison
+        logger.info("SmartExtractor: Attempting rule-based extraction...")
         try:
-            specs = self.rule_extractor.extract(contexts, query=query)
-            logger.info(f"SmartExtractor: ✓ Rule-based succeeded with {len(specs)} specs")
-            return specs
+            rule_specs = self.rule_extractor.extract(contexts, query=query)
+            logger.info(f"SmartExtractor: Rule-based returned {len(rule_specs)} specs")
         except Exception as e:
-            logger.error(f"SmartExtractor: Rule-based extraction also failed: {e}")
+            logger.error(f"SmartExtractor: Rule-based extraction failed: {e}")
+            rule_specs = []
+
+        # Compare and pick the best
+        best_specs = self._compare_and_select(ollama_specs, rule_specs, query)
+        
+        logger.info(f"SmartExtractor: ✓ Selected {self.last_method_used} with {len(best_specs)} specs")
+        return best_specs
+
+    def _compare_and_select(self, ollama_specs: List[ExtractedSpec], 
+                           rule_specs: List[ExtractedSpec],
+                           query: str) -> List[ExtractedSpec]:
+        """
+        Compare extraction results and select the best one.
+
+        Scoring criteria (in order):
+        1. More specs count (quantity)
+        2. Higher average confidence scores (quality)
+        3. Query relevance (semantic match with component names)
+
+        Args:
+            ollama_specs: Results from Ollama
+            rule_specs: Results from rule-based
+            query: Original query
+
+        Returns:
+            Best extraction results
+        """
+        # If only one method returned results
+        if not ollama_specs and rule_specs:
+            self.last_method_used = "rule_based"
+            logger.info("SmartExtractor: Selecting rule-based (Ollama had 0 results)")
+            return rule_specs
+        
+        if not rule_specs and ollama_specs:
+            self.last_method_used = "ollama"
+            logger.info("SmartExtractor: Selecting Ollama (rule-based had 0 results)")
+            return ollama_specs
+        
+        if not ollama_specs and not rule_specs:
+            self.last_method_used = "none"
+            logger.warning("SmartExtractor: No results from any method")
             return []
+
+        # Both methods returned results - compare them
+        ollama_score = self._score_results(ollama_specs, query)
+        rule_score = self._score_results(rule_specs, query)
+
+        logger.info(f"SmartExtractor: Ollama score: {ollama_score:.2f} (ratio: {ollama_score:.0%})")
+        logger.info(f"SmartExtractor: Rule-based score: {rule_score:.2f} (ratio: {rule_score:.0%})")
+
+        if rule_score > ollama_score:
+            self.last_method_used = "rule_based"
+            logger.info(f"SmartExtractor: Rule-based WINS (score diff: +{rule_score - ollama_score:.2f})")
+            return rule_specs
+        elif ollama_score > rule_score:
+            self.last_method_used = "ollama"
+            logger.info(f"SmartExtractor: Ollama WINS (score diff: +{ollama_score - rule_score:.2f})")
+            return ollama_specs
+        else:
+            # Same score - prefer rule-based (faster, deterministic)
+            self.last_method_used = "rule_based"
+            logger.info("SmartExtractor: Scores tied - selecting rule-based (faster)")
+            return rule_specs
+
+    def _score_results(self, specs: List[ExtractedSpec], query: str) -> float:
+        """
+        Score extraction results on quality and quantity.
+
+        Scoring formula (RAG-focused):
+        - Quantity score: (num_specs / 6) * 0.6      [0-0.6] (60% weight)
+        - Quality score: avg(confidence) * 0.4       [0-0.4] (40% weight)
+        - Total: [0.0 - 1.0]
+        
+        Rationale: 60% quantity emphasizes comprehensive extraction (RAG goal),
+        while 40% quality prevents low-confidence specs. This ensures rule-based
+        fallback with more specs wins over fewer high-confidence results.
+
+        Args:
+            specs: List of extracted specs
+            query: Original query (for potential relevance scoring)
+
+        Returns:
+            Score between 0.0 and 1.0
+        """
+        if not specs:
+            return 0.0
+
+        # Component 1: Quantity score (normalized) - 60% weight
+        # More specs = higher score, but diminishing returns after 6 specs
+        quantity_score = min(len(specs) / 6.0, 1.0) * 0.6
+
+        # Component 2: Quality score (average confidence) - 40% weight
+        avg_confidence = sum(s.confidence for s in specs) / len(specs)
+        quality_score = avg_confidence * 0.4
+
+        total_score = quantity_score + quality_score
+        
+        logger.debug(f"Result scoring: {len(specs)} specs, "
+                    f"avg_conf={avg_confidence:.2f}, "
+                    f"qty_score={quantity_score:.2f}, "
+                    f"qual_score={quality_score:.2f}, "
+                    f"total={total_score:.2f}")
+        
+        return total_score
+
+    def extract_with_metadata(self, query: str, contexts: List[Dict]) -> Dict:
+        """
+        Extract specifications and return with metadata about which method was used.
+
+        Useful for UI to show which extraction method was selected.
+
+        Returns:
+            {
+                "specs": List[ExtractedSpec],
+                "method_used": str ("ollama" or "rule_based"),
+                "confidence": float (0.0-1.0),
+                "message": str (explanation for UI)
+            }
+        """
+        best_specs = self.extract(query, contexts)
+        
+        if not best_specs:
+            avg_confidence = 0.0
+            message = "⚠️ No specifications found"
+        else:
+            avg_confidence = sum(s.confidence for s in best_specs) / len(best_specs)
+            message = f"✓ Found {len(best_specs)} specs using {self.last_method_used}"
+        
+        return {
+            "specs": best_specs,
+            "method_used": self.last_method_used,
+            "num_specs": len(best_specs),
+            "average_confidence": avg_confidence,
+            "message": message
+        }
 
     def get_diagnostics_report(self) -> Dict:
         """Get performance diagnostics report."""
