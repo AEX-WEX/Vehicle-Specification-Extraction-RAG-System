@@ -363,8 +363,8 @@ If you use this project in research, please cite:
 
 ## Contact & Support
 
-- **Author**: Aditya Kr. Choudhary
-- **Email**: adityapscv1919@gmail.com
+- **Author**: Roshan Dhekale
+- **Email**: roshan99185@gmail.com
 - **GitHub**: [AEX-WEX](https://github.com/AEX-WEX)
 
 ---
