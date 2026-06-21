@@ -337,7 +337,7 @@ If you use this project in research, please cite:
 ```bibtex
 @software{vehicle_spec_rag_2026,
   title={Vehicle Specification Extraction RAG System},
-  author={Aditya Kr. Choudhary},
+  author={Roshan Dhekale},
   year={2026},
   url={https://github.com/AEX-WEX/vehicle-spec-rag}
 }
@@ -371,4 +371,4 @@ If you use this project in research, please cite:
 
 **Last Updated**: February 2026
 **Status**: Production Ready
-**Author**: Aditya Kr. Choudhary
+**Author**: Roshan Dhekale
