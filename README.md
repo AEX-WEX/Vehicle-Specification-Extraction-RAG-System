@@ -363,12 +363,12 @@ If you use this project in research, please cite:
 
 ## Contact & Support
 
-- **Author**: Roshan Dhekale
-- **Email**: roshan99185@gmail.com
+- **Author**: Aditya Kumar Choudhary
+- **Email**: adityapscv1919@gmail.com
 - **GitHub**: [AEX-WEX](https://github.com/AEX-WEX)
 
 ---
 
 **Last Updated**: February 2026
 **Status**: Production Ready
-**Author**: Roshan Dhekale
+**Author**: Aditya Kumar Choudhary
