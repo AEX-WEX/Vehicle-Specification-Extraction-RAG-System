@@ -1,0 +1,525 @@
+{
+ "document": "data/sample-service-manual_1.pdf",
+ "labeling": "Held-out set: specs NOT used while developing the parser. Labels read by eye from the manual tables (not produced by the parser); queries are short and natural, without section hints. page_number is a list when the same row appears in several sections. H26 was added after the first full run revealed that the manual does list brake fluid (740 ml); it is therefore not a blind test.",
+ "specs": [
+  {
+   "query": "brake disc shield bolts torque",
+   "component": "Brake disc shield bolts",
+   "spec_type": "Torque",
+   "page_number": [
+    24,
+    59,
+    636
+   ],
+   "accept": [
+    {
+     "value": 17,
+     "unit": "Nm"
+    },
+    {
+     "value": 150,
+     "unit": "lb-in"
+    },
+    {
+     "value": 18,
+     "unit": "Nm"
+    },
+    {
+     "value": 159,
+     "unit": "lb-in"
+    }
+   ],
+   "id": "H01"
+  },
+  {
+   "query": "shock rod nut torque",
+   "component": "Shock rod nut",
+   "spec_type": "Torque",
+   "page_number": [
+    24,
+    59
+   ],
+   "accept": [
+    {
+     "value": 55,
+     "unit": "Nm"
+    },
+    {
+     "value": 41,
+     "unit": "lb-ft"
+    }
+   ],
+   "id": "H02"
+  },
+  {
+   "query": "lower arm forward and rearward nuts torque",
+   "component": "Lower arm forward and rearward nuts",
+   "spec_type": "Torque",
+   "page_number": [
+    24,
+    59
+   ],
+   "accept": [
+    {
+     "value": 350,
+     "unit": "Nm"
+    },
+    {
+     "value": 258,
+     "unit": "lb-ft"
+    }
+   ],
+   "id": "H03"
+  },
+  {
+   "query": "skid plate bolts torque",
+   "component": "Skid plate bolts",
+   "spec_type": "Torque",
+   "page_number": [
+    59,
+    234
+   ],
+   "accept": [
+    {
+     "value": 48,
+     "unit": "Nm"
+    },
+    {
+     "value": 35,
+     "unit": "lb-ft"
+    }
+   ],
+   "id": "H04"
+  },
+  {
+   "query": "SVT Raptor stabilizer bar link nuts torque",
+   "component": "Stabilizer bar link nuts (SVT Raptor)",
+   "spec_type": "Torque",
+   "page_number": [
+    59
+   ],
+   "accept": [
+    {
+     "value": 80,
+     "unit": "Nm"
+    },
+    {
+     "value": 59,
+     "unit": "lb-ft"
+    }
+   ],
+   "id": "H05"
+  },
+  {
+   "query": "integrated wheel end bolts torque",
+   "component": "Integrated Wheel End (IWE) bolts",
+   "spec_type": "Torque",
+   "page_number": [
+    59,
+    578
+   ],
+   "accept": [
+    {
+     "value": 12,
+     "unit": "Nm"
+    },
+    {
+     "value": 106,
+     "unit": "lb-in"
+    }
+   ],
+   "id": "H06"
+  },
+  {
+   "query": "spring-to-shackle nut torque",
+   "component": "Spring-to-shackle nut",
+   "spec_type": "Torque",
+   "page_number": [
+    128
+   ],
+   "accept": [
+    {
+     "value": 185,
+     "unit": "Nm"
+    },
+    {
+     "value": 136,
+     "unit": "lb-ft"
+    }
+   ],
+   "id": "H07"
+  },
+  {
+   "query": "SVT Raptor shock absorber shield bolts torque",
+   "component": "Shock absorber shield bolts (SVT Raptor)",
+   "spec_type": "Torque",
+   "page_number": [
+    128
+   ],
+   "accept": [
+    {
+     "value": 4,
+     "unit": "Nm"
+    },
+    {
+     "value": 35,
+     "unit": "lb-in"
+    }
+   ],
+   "id": "H08"
+  },
+  {
+   "query": "handle adapter torque",
+   "component": "Handle Adapter",
+   "spec_type": "Torque",
+   "page_number": [
+    259
+   ],
+   "accept": [
+    {
+     "value": 2.2,
+     "unit": "Nm"
+    },
+    {
+     "value": 20,
+     "unit": "lb-in"
+    }
+   ],
+   "id": "H09"
+  },
+  {
+   "query": "tool 205-135 nut torque",
+   "component": "Tool 205-135 nut",
+   "spec_type": "Torque",
+   "page_number": [
+    259
+   ],
+   "accept": [
+    {
+     "value": 7,
+     "unit": "Nm"
+    },
+    {
+     "value": 62,
+     "unit": "lb-in"
+    }
+   ],
+   "id": "H10"
+  },
+  {
+   "query": "RH parking brake cable bracket bolt torque",
+   "component": "RH parking brake cable bracket bolt",
+   "spec_type": "Torque",
+   "page_number": [
+    259,
+    672
+   ],
+   "accept": [
+    {
+     "value": 30,
+     "unit": "Nm"
+    },
+    {
+     "value": 22,
+     "unit": "lb-ft"
+    }
+   ],
+   "id": "H11"
+  },
+  {
+   "query": "brake tube parking brake cable bracket bolt torque",
+   "component": "Brake tube/parking brake cable bracket bolt",
+   "spec_type": "Torque",
+   "page_number": [
+    259
+   ],
+   "accept": [
+    {
+     "value": 25,
+     "unit": "Nm"
+    },
+    {
+     "value": 18,
+     "unit": "lb-ft"
+    }
+   ],
+   "id": "H12"
+  },
+  {
+   "query": "driveshaft flange bolts torque",
+   "component": "Driveshaft flange bolts",
+   "spec_type": "Torque",
+   "page_number": [
+    234,
+    341
+   ],
+   "accept": [
+    {
+     "value": 103,
+     "unit": "Nm"
+    },
+    {
+     "value": 76,
+     "unit": "lb-ft"
+    }
+   ],
+   "id": "H13"
+  },
+  {
+   "query": "ELD electrical connector bolt torque",
+   "component": "ELD electrical connector bolt",
+   "spec_type": "Torque",
+   "page_number": [
+    341
+   ],
+   "accept": [
+    {
+     "value": 7,
+     "unit": "Nm"
+    },
+    {
+     "value": 62,
+     "unit": "lb-in"
+    }
+   ],
+   "id": "H14"
+  },
+  {
+   "query": "brake flexible hose bracket to axle bolt torque",
+   "component": "Brake flexible hose bracket-to-axle bolt",
+   "spec_type": "Torque",
+   "page_number": [
+    652
+   ],
+   "accept": [
+    {
+     "value": 30,
+     "unit": "Nm"
+    },
+    {
+     "value": 22,
+     "unit": "lb-ft"
+    }
+   ],
+   "id": "H15"
+  },
+  {
+   "query": "brake flexible hose bracket to frame bolt torque",
+   "component": "Brake flexible hose bracket-to-frame bolt",
+   "spec_type": "Torque",
+   "page_number": [
+    652
+   ],
+   "accept": [
+    {
+     "value": 17,
+     "unit": "Nm"
+    },
+    {
+     "value": 150,
+     "unit": "lb-in"
+    }
+   ],
+   "id": "H16"
+  },
+  {
+   "query": "axle vent valve torque",
+   "component": "Axle vent valve",
+   "spec_type": "Torque",
+   "page_number": [
+    652
+   ],
+   "accept": [
+    {
+     "value": 18,
+     "unit": "Nm"
+    },
+    {
+     "value": 159,
+     "unit": "lb-in"
+    }
+   ],
+   "id": "H17"
+  },
+  {
+   "query": "brake pedal control switch screw torque",
+   "component": "Brake pedal control switch screw",
+   "spec_type": "Torque",
+   "page_number": [
+    696
+   ],
+   "accept": [
+    {
+     "value": 3,
+     "unit": "Nm"
+    },
+    {
+     "value": 27,
+     "unit": "lb-in"
+    }
+   ],
+   "id": "H18"
+  },
+  {
+   "query": "hood switch and bracket nut torque",
+   "component": "Hood switch and bracket nut",
+   "spec_type": "Torque",
+   "page_number": [
+    696
+   ],
+   "accept": [
+    {
+     "value": 6,
+     "unit": "Nm"
+    },
+    {
+     "value": 53,
+     "unit": "lb-in"
+    }
+   ],
+   "id": "H19"
+  },
+  {
+   "query": "coolant expansion tank air cleaner housing assembly bolts torque",
+   "component": "Coolant expansion tank/lower Air Cleaner (ACL) housing assembly bolts",
+   "spec_type": "Torque",
+   "page_number": [
+    696,
+    734
+   ],
+   "accept": [
+    {
+     "value": 15,
+     "unit": "Nm"
+    },
+    {
+     "value": 133,
+     "unit": "lb-in"
+    }
+   ],
+   "id": "H20"
+  },
+  {
+   "query": "brake flexible hose bracket to wheel knuckle bolt torque",
+   "component": "Brake flexible hose bracket-to-wheel knuckle bolt",
+   "spec_type": "Torque",
+   "page_number": [
+    636
+   ],
+   "accept": [
+    {
+     "value": 30,
+     "unit": "Nm"
+    },
+    {
+     "value": 22,
+     "unit": "lb-ft"
+    }
+   ],
+   "id": "H21"
+  },
+  {
+   "query": "upper ball joint nut torque",
+   "component": "Upper ball joint nut",
+   "spec_type": "Torque",
+   "page_number": [
+    24,
+    59,
+    578
+   ],
+   "accept": [
+    {
+     "value": 115,
+     "unit": "Nm"
+    },
+    {
+     "value": 85,
+     "unit": "lb-ft"
+    },
+    {
+     "value": 150,
+     "unit": "Nm"
+    },
+    {
+     "value": 111,
+     "unit": "lb-ft"
+    }
+   ],
+   "id": "H22"
+  },
+  {
+   "query": "wheel speed sensor harness bracket bolt torque",
+   "component": "Wheel speed sensor harness bracket bolt",
+   "spec_type": "Torque",
+   "page_number": [
+    59,
+    578
+   ],
+   "accept": [
+    {
+     "value": 12,
+     "unit": "Nm"
+    },
+    {
+     "value": 106,
+     "unit": "lb-in"
+    }
+   ],
+   "id": "H23"
+  },
+  {
+   "query": "9.75-inch rear axle lubricant fill capacity",
+   "component": "Rear axle lubricant",
+   "spec_type": "Capacity",
+   "page_number": [
+    340
+   ],
+   "accept": [
+    {
+     "value": 2.84,
+     "unit": "L"
+    },
+    {
+     "value": 2.6,
+     "unit": "L"
+    },
+    {
+     "value": 2.48,
+     "unit": "L"
+    }
+   ],
+   "id": "H24"
+  },
+  {
+   "query": "friction modifier capacity 9.75-inch ring gear axle",
+   "component": "Additive friction modifier",
+   "spec_type": "Capacity",
+   "page_number": [
+    340
+   ],
+   "accept": [
+    {
+     "value": 118,
+     "unit": "ml"
+    }
+   ],
+   "id": "H25"
+  },
+  {
+   "query": "brake fluid capacity",
+   "component": "Brake fluid",
+   "spec_type": "Capacity",
+   "page_number": [
+    696,
+    747
+   ],
+   "accept": [
+    {
+     "value": 740,
+     "unit": "ml"
+    }
+   ],
+   "id": "H26"
+  }
+ ]
+}

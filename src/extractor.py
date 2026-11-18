@@ -15,6 +15,9 @@ logger = logging.getLogger(__name__)
 
 from dotenv import load_dotenv
 from src.extractor_diagnostics import get_diagnostics
+from src.table_parser import (attribute_source, is_capacity_query, is_grounded, is_torque_query, parse_capacity_entries,
+                              parse_torque_rows, query_capacity, query_rows, retrieval_sufficient,
+                              section_prefix, split_table_blocks, verify_evidence)
 
 load_dotenv()
 
@@ -30,6 +33,61 @@ class ExtractedSpec:
     page_number: Optional[int] = None
 
 
+def pick_model(wanted: str, installed: List[str]) -> Optional[str]:
+    """Choose an installed Ollama model: exact tag, same family (llama3 -> llama3:8b), else any installed."""
+    if not installed:
+        return None
+    names = {n.lower(): n for n in installed}
+    w = (wanted or "").lower()
+    for cand in (w, w + ":latest"):
+        if cand in names:
+            return names[cand]
+    family = w.split(":")[0]
+    for n in installed:
+        if n.lower().split(":")[0] == family:
+            return n
+    for n in installed:                       # same family prefix, e.g. llama3 -> llama3.2:3b
+        if family and n.lower().startswith(family[:6]):
+            return n
+    return installed[0]
+
+
+def load_llm_settings() -> Dict:
+    """LLM settings: environment (.env) first, then config.yaml, then defaults."""
+    import os
+    cfg = {}
+    try:
+        import yaml
+        with open("config.yaml", "r", encoding="utf-8") as f:
+            cfg = (yaml.safe_load(f) or {}).get("llm", {})
+    except Exception as e:
+        logger.debug(f"config.yaml not read for LLM settings: {e}")
+    return {
+        "model": os.getenv("MODEL_NAME") or cfg.get("model", "llama3"),
+        "base_url": os.getenv("LLM_BASE_URL") or cfg.get("base_url", "http://localhost:11434"),
+        "temperature": float(os.getenv("LLM_TEMPERATURE") or cfg.get("temperature", 0.0)),
+        "max_tokens": int(os.getenv("LLM_MAX_TOKENS") or cfg.get("max_tokens", 500)),
+    }
+
+
+def resolve_installed_model(wanted: str, base_url: str) -> Optional[str]:
+    """Ask the running Ollama which models it has and pick the best match (None if unreachable/empty)."""
+    import requests
+    try:
+        r = requests.get(f"{base_url}/api/tags", timeout=3)
+        installed = [m.get("name", "") for m in r.json().get("models", [])]
+    except Exception as e:
+        logger.warning(f"Could not list Ollama models at {base_url}: {e}")
+        return None
+    chosen = pick_model(wanted, installed)
+    if chosen is None:
+        logger.error(f"Ollama has no models installed. Run: ollama pull {wanted}")
+    elif chosen.lower() not in (wanted.lower(), wanted.lower() + ":latest"):
+        logger.warning(f"Configured model '{wanted}' is not installed; using '{chosen}' "
+                       f"(installed: {installed}). Run `ollama pull {wanted}` or set MODEL_NAME.")
+    return chosen
+
+
 class OllamaExtractor:
     """
     Extracts structured specifications using local Ollama models.
@@ -39,7 +97,8 @@ class OllamaExtractor:
                  model: str = "llama3",
                  temperature: float = 0.0,
                  max_tokens: int = 500,
-                 base_url: str = "http://localhost:11434"):
+                 base_url: str = "http://localhost:11434",
+                 require_evidence: bool = True):
         """
         Initialize Ollama extractor.
         
@@ -53,6 +112,7 @@ class OllamaExtractor:
         self.temperature = temperature
         self.max_tokens = max_tokens
         self.base_url = base_url
+        self.require_evidence = require_evidence      # drop answers whose quoted evidence is not in the manual text
         
         logger.info(f"Initialized Ollama extractor: {model}")
     
@@ -308,34 +368,31 @@ MANUAL TEXT:
 {context_text}
 
 TASK:
-Extract specifications with these EXACT fields:
-- component: name of the part (e.g., "Brake Caliper Bolt")
-- spec_type: type (Torque, Capacity, Pressure, Temperature, Speed, Power, etc.)
+Extract the specification that answers the USER QUESTION, using ONLY the MANUAL TEXT above.
+Fields for every item:
+- component: name of the part exactly as written in the manual text
+- spec_type: type (Torque, Capacity, Pressure, Temperature, Clearance, etc.)
 - value: ONLY the number (e.g., "35" NOT "35 Nm")
 - unit: ONLY the unit (e.g., "Nm" NOT "35 Nm" or "35")
+- evidence: a short quote copied CHARACTER FOR CHARACTER from the MANUAL TEXT that contains the component and the value
 
 CRITICAL RULES:
-1. Separate the number from the unit ALWAYS
-2. If value is "1.66L liters", output value="1.66" and unit="liters"
-3. If value contains text like "35 Nm", output value="35" and unit="Nm"
-4. Output ONLY clean numeric values in the "value" field
-5. If you cannot find the exact numeric value, DO NOT include that specification
-6. Return ONLY valid JSON, no explanations or text
+1. Use ONLY the manual text. Never use your own knowledge and never guess a number.
+2. If the manual text does not state the answer to the question, return an empty array: []
+3. Do not return a part that the question did not ask about.
+4. Copy the evidence exactly; if you cannot quote it, do not return the item.
+5. Separate the number from the unit: "35 Nm" -> value "35", unit "Nm".
+6. Return ONLY valid JSON, no explanations or text.
 
-CORRECT EXAMPLES:
-Input text: "Brake caliper bolt: 35 Nm"
-       -> {{"component": "Brake Caliper Bolt", "spec_type": "Torque", "value": "35", "unit": "Nm"}}
+EXAMPLE (made-up manual text, not from this manual):
+Question: "flux capacitor mount torque"
+Manual text: "Flux capacitor mount bolts 12 Nm 9 lb-ft"
+Output: [{{"component": "Flux capacitor mount bolts", "spec_type": "Torque", "value": "12", "unit": "Nm", "evidence": "Flux capacitor mount bolts 12 Nm"}}]
 
-Input text: "Engine oil capacity: 4.5 liters"
-       -> {{"component": "Engine Oil", "spec_type": "Capacity", "value": "4.5", "unit": "liters"}}
-
-Input text: "Tire pressure: 2.4 bar"
-       -> {{"component": "Tire", "spec_type": "Pressure", "value": "2.4", "unit": "bar"}}
-
-INCORRECT EXAMPLES (DO NOT DO THIS):
-- WRONG: {{"value": "35 Nm"}} - value should NOT contain unit
-- WRONG: {{"unit": "35"}} - unit should NOT contain number
-- WRONG: {{"value": "1.66L liters"}} - value should only be number
+EXAMPLE of a question the text does not answer:
+Question: "warp coil capacity"
+Manual text: "Flux capacitor mount bolts 12 Nm 9 lb-ft"
+Output: []
 
 JSON OUTPUT (array only, no text before or after):"""
 
@@ -459,13 +516,20 @@ JSON OUTPUT (array only, no text before or after):"""
                 logger.debug(f"Skipping spec with empty value after cleaning: {item}")
                 continue
 
+            # Anti-hallucination: the quoted evidence must exist verbatim in a retrieved chunk and contain the value.
+            verified = verify_evidence(item.get("evidence", ""), value_clean, contexts)
+            if self.require_evidence and verified is None:
+                logger.info(f"Dropping unverifiable LLM answer (evidence not found in manual text): {item}")
+                continue
+            # Provenance: the chunk the evidence came from (else the chunk containing the value)
+            src = verified or attribute_source(item.get("component", ""), value_clean, contexts) or (contexts[0] if contexts else None)
             spec = ExtractedSpec(
                 component=item.get("component", "Unknown"),
                 spec_type=item.get("spec_type", "Unknown"),
                 value=value_clean,
                 unit=unit_clean,
-                source_chunk_id=contexts[0]['chunk_id'] if contexts else None,
-                page_number=contexts[0]['page_number'] if contexts else None
+                source_chunk_id=src['chunk_id'] if src else None,
+                page_number=src['page_number'] if src else None
             )
             specs.append(spec)
             logger.debug(f"Parsed spec: {spec.component} = {spec.value} {spec.unit}")
@@ -649,6 +713,52 @@ class RuleBasedExtractor:
             return specs
 
 
+class TableRowExtractor:
+    """Deterministic extractor for specification tables (no LLM needed).
+
+    * "Torque Specifications" tables -> one spec per matching row (Nm, falling back to lb-ft / lb-in)
+    * "Material" tables             -> fluid / material fill capacities (L, ml, oz)
+
+    Only rows that match the query are returned, and each result carries the page and chunk it was
+    read from.
+    """
+
+    def extract(self, contexts: List[Dict], query: str = "") -> List[ExtractedSpec]:
+        hits = []                                           # (score, spec_type, payload, ctx)
+        for ctx in contexts:
+            text = ctx.get("text", "")
+            section = section_prefix(text)
+            _, blocks = split_table_blocks(text)
+            if is_torque_query(query):
+                rows = [r for b in blocks if b.startswith("Torque Specifications") for r in parse_torque_rows(b)]
+                hits += [(sc, "Torque", row, ctx) for row, sc in query_rows(query, rows, section)]
+            if is_capacity_query(query):
+                ents = [e for b in blocks if b.startswith("Material") for e in parse_capacity_entries(b)]
+                hits += [(sc, "Capacity", ent, ctx) for ent, sc in query_capacity(query, ents, section)]
+        if not hits:
+            return []
+        best = max(h[0] for h in hits)
+        specs, seen = [], set()
+        for score, spec_type, item, ctx in hits:
+            if score < best - 1e-9:
+                continue
+            if spec_type == "Torque":
+                name = item.description
+                value, unit = item.primary()
+            else:
+                short = section_prefix(ctx.get("text", "")).split(":", 1)[-1].strip()
+                name = f"{item.name} ({short})" if short else item.name
+                value, unit = item.value, item.unit
+            key = (name.lower(), value, unit, ctx["page_number"])
+            if key in seen:
+                continue
+            seen.add(key)
+            specs.append(ExtractedSpec(component=name, spec_type=spec_type, value=value, unit=unit,
+                                       confidence=0.95, source_chunk_id=ctx["chunk_id"],
+                                       page_number=ctx["page_number"]))
+        return specs[:5]
+
+
 class SmartExtractor:
     """
     Smart extractor that:
@@ -661,13 +771,21 @@ class SmartExtractor:
     def __init__(self):
         """Initialize smart extractor."""
         self.diagnostics = get_diagnostics()
-        self.ollama_extractor = OllamaExtractor()
+        settings = load_llm_settings()
+        model = resolve_installed_model(settings["model"], settings["base_url"]) if self.diagnostics.ollama_status else None
+        self.ollama_model_ok = model is not None
+        self.ollama_extractor = OllamaExtractor(model=model or settings["model"],
+                                                temperature=settings["temperature"],
+                                                max_tokens=settings["max_tokens"],
+                                                base_url=settings["base_url"])
         self.rule_extractor = RuleBasedExtractor()
+        self.table_extractor = TableRowExtractor()
         self.last_method_used = None  # Track which method was best
         
         logger.info(f"SmartExtractor initialized (Ollama available: {self.diagnostics.ollama_status})")
 
-    def extract(self, query: str, contexts: List[Dict]) -> List[ExtractedSpec]:
+    def extract(self, query: str, contexts: List[Dict],
+                table_contexts: Optional[List[Dict]] = None) -> List[ExtractedSpec]:
         """
         Intelligently extract specifications by comparing methods.
 
@@ -685,13 +803,29 @@ class SmartExtractor:
             List of ExtractedSpec objects (from best method)
         """
         logger.info(f"SmartExtractor: Processing query '{query[:50]}...'")
+
+        # Table rows are parsed deterministically; when the retrieved chunks contain a matching
+        # row it is exact, so no LLM call is needed.
+        table_specs = self.table_extractor.extract((table_contexts or []) + contexts, query=query)
+        if table_specs:
+            self.last_method_used = "table_parser"
+            logger.info(f"SmartExtractor: table parser returned {len(table_specs)} specs")
+            return table_specs
+
         logger.info(f"SmartExtractor: Ollama status: {'Available' if self.diagnostics.ollama_status else 'Unavailable'}")
+
+        # Retrieval sufficiency: if no retrieved chunk even mentions the question's key terms, the LLM can only
+        # guess. Say "not found" immediately (this also avoids a slow LLM call).
+        if not retrieval_sufficient(query, contexts):
+            self.last_method_used = "none"
+            logger.info("SmartExtractor: retrieved text does not cover the question - abstaining without LLM")
+            return []
 
         ollama_specs = []
         rule_specs = []
         
         # Try Ollama if available
-        if self.diagnostics.ollama_status:
+        if self.diagnostics.ollama_status and self.ollama_model_ok:
             logger.info("SmartExtractor: Attempting Ollama extraction...")
             try:
                 ollama_specs = self.ollama_extractor.extract(query, contexts, validate=True)
@@ -711,11 +845,22 @@ class SmartExtractor:
             logger.error(f"SmartExtractor: Rule-based extraction failed: {e}")
             rule_specs = []
 
+        # Abstain rather than guess: drop anything that is not traceable to the retrieved text
+        ollama_specs = self._keep_grounded(ollama_specs, contexts, query, "ollama")
+        rule_specs = self._keep_grounded(rule_specs, contexts, query, "rule_based")
+
         # Compare and pick the best
         best_specs = self._compare_and_select(ollama_specs, rule_specs, query)
         
         logger.info(f"SmartExtractor: ✓ Selected {self.last_method_used} with {len(best_specs)} specs")
         return best_specs
+
+    @staticmethod
+    def _keep_grounded(specs: List[ExtractedSpec], contexts: List[Dict], query: str, method: str) -> List[ExtractedSpec]:
+        kept = [sp for sp in specs if is_grounded(sp.component, sp.value, sp.spec_type, query, contexts)]
+        if len(kept) != len(specs):
+            logger.info(f"SmartExtractor: dropped {len(specs) - len(kept)} ungrounded/irrelevant {method} specs")
+        return kept
 
     def _compare_and_select(self, ollama_specs: List[ExtractedSpec], 
                            rule_specs: List[ExtractedSpec],
@@ -814,7 +959,8 @@ class SmartExtractor:
         
         return total_score
 
-    def extract_with_metadata(self, query: str, contexts: List[Dict]) -> Dict:
+    def extract_with_metadata(self, query: str, contexts: List[Dict],
+                              table_contexts: Optional[List[Dict]] = None) -> Dict:
         """
         Extract specifications and return with metadata about which method was used.
 
@@ -828,7 +974,7 @@ class SmartExtractor:
                 "message": str (explanation for UI)
             }
         """
-        best_specs = self.extract(query, contexts)
+        best_specs = self.extract(query, contexts, table_contexts)
         
         if not best_specs:
             avg_confidence = 0.0

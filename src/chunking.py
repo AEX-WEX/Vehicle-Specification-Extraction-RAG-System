@@ -9,6 +9,8 @@ import logging
 from typing import List, Dict, Optional, Tuple
 from dataclasses import dataclass
 
+from src.table_parser import find_section, split_table_blocks, split_long_block
+
 logger = logging.getLogger(__name__)
 
 
@@ -65,19 +67,33 @@ class SemanticChunker:
         """
         all_chunks = []
         chunk_counter = 0
-        
+        section = ""
+
         for page in pages:
-            page_chunks = self.chunk_text(
-                text=page["text"],
-                page_number=page["page_number"],
-                metadata=page.get("metadata", {})
-            )
-            
+            # Section titles carry over to the following pages (continuation pages have no title line)
+            section = find_section(page["text"]) or section
+            prefix = f"[{section}]\n" if section else ""
+            prose, tables = split_table_blocks(page["text"])
+            meta = dict(page.get("metadata", {}))
+            meta["section"] = section
+
+            page_chunks = []
+            # Each specification table becomes its own chunk(s): heading and rows stay together,
+            # so the torque rows are never separated from their "Torque Specifications" heading.
+            for block in tables:
+                for piece in split_long_block(block):
+                    page_chunks.append(Chunk(text=prefix + piece, chunk_id="", page_number=page["page_number"],
+                                             start_char=0, end_char=len(piece),
+                                             metadata={**meta, "kind": "table"}))
+            for chunk in self.chunk_text(text=prose, page_number=page["page_number"], metadata=meta):
+                chunk.text = prefix + chunk.text
+                page_chunks.append(chunk)
+
             for chunk in page_chunks:
                 chunk.chunk_id = f"chunk_{chunk_counter:05d}"
                 chunk_counter += 1
                 all_chunks.append(chunk)
-        
+
         logger.info(f"Created {len(all_chunks)} chunks from {len(pages)} pages")
         return all_chunks
     

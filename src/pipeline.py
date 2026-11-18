@@ -193,7 +193,8 @@ class VehicleSpecRAGPipeline:
             embedding_model=self.embedding_model,
             top_k=self.config['retrieval']['top_k'],
             score_threshold=self.config['retrieval'].get('score_threshold'),
-            max_context_length=self.config['retrieval']['max_context_length']
+            max_context_length=self.config['retrieval']['max_context_length'],
+            rerank_pool=self.config['retrieval'].get('rerank_pool', 6)
         )
         logger.debug("Retriever initialized")
     
@@ -256,7 +257,8 @@ class VehicleSpecRAGPipeline:
         # Extract specifications with method tracking
         metadata = self.extractor.extract_with_metadata(
             query=query_text,
-            contexts=contexts
+            contexts=contexts,
+            table_contexts=self.retriever.table_contexts()
         )
         
         specs = metadata["specs"]

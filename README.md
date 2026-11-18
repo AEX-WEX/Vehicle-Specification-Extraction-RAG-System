@@ -1,374 +1,104 @@
 # Vehicle Specification Extraction RAG System
 
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-An AI-powered Retrieval-Augmented Generation (RAG) system for extracting structured vehicle specifications from PDF service manuals using local language models.
+Extracts structured specifications (torque, fluid capacity, clearances) from vehicle service-manual PDFs using retrieval-augmented generation. Everything runs locally: Ollama (Llama 3) for the language model, FAISS and sentence-transformers for retrieval. No API cost and no document leaves the machine.
 
----
+Every result carries the component, spec type, value, unit, **source page** and **source chunk ID**, so each number can be traced back to the manual.
 
-**📚 Documentation:**
-- [📖 UI Walkthrough](docs/UI_WALKTHROUGH.md) - Visual guide with examples
-- [🏗️ Architecture](ARCHITECTURE.md) - System design
-- [🔌 API Reference](API_DOCUMENTATION.md) - REST endpoints
+## How it works
 
----
+```
+PDF ─► parse (PyMuPDF, table rows rebuilt from word positions)
+    ─► table-aware chunking (each spec table is one chunk, prefixed with its manual section)
+    ─► embed (all-MiniLM-L6-v2) ─► FAISS index
+query ─► embedding search over a wide pool ─► lexical rerank ─► top-k chunks ─► SmartExtractor
+                                   ├─ table parser   (deterministic: torque rows and fill capacities)
+                                   ├─ Ollama / Llama 3 (prose and fluid capacities)
+                                   └─ rule-based regex extractor (fallback)
+```
 
-## Overview
+`SmartExtractor` uses the table parser when a table row matches, since that is exact. Otherwise it runs Ollama and the regex extractor, requires the LLM to quote its evidence, keeps only answers that are traceable to the retrieved text and relevant to the question, and returns the better result. If nothing survives, or the retrieved text doesn't cover the question, it says so instead of guessing (see [docs/EVALUATION.md](docs/EVALUATION.md)). Each response says which method produced it.
 
-This system combines dense vector retrieval with local LLM inference to extract precise vehicle specifications from service manuals. It achieves more than 90% extraction success rates even on complex 800+ page documents, with structured JSON output and comprehensive error handling.
+**Where the page number comes from.** Every chunk is created from a single PDF page and keeps that 1-based page number. A result's page is the page of the chunk the value was read from (the table parser uses the chunk of the matched row; the LLM path matches the value back to the retrieved chunk that contains it). Pages are PDF page indices, not the section-relative "Page 2 sur 3" printed in the manual's header.
 
-### Key Features
+| Module | Role |
+|---|---|
+| `src/pdf_loader.py`, `src/chunking.py` | parse the PDF and split it into overlapping chunks with page metadata |
+| `src/embeddings.py`, `src/vector_store.py` | embeddings and the FAISS index (persisted in `index/`) |
+| `src/retriever.py` | top-k and hybrid (semantic + keyword) retrieval |
+| `src/extractor.py` | Ollama, rule-based and combined extraction |
+| `src/pipeline.py` | orchestration |
+| `api/app.py`, `static/index.html` | FastAPI service and web UI |
+| `eval/` | ground-truth set and scoring (see below) |
 
-- **Local LLM Processing**: Uses Ollama + Llama3 for on-premise inference (no API costs, complete privacy)
-- **Dense Vector Retrieval**: FAISS + sentence-transformers for semantic search across documents
-- **Structured Extraction**: Extracts specifications as JSON with component, type, value, and unit fields
-- **REST API**: FastAPI-based API for programmatic access
-- **Web UI**: Beautiful, responsive interface for interactive queries
-- **Error Handling**: Comprehensive fallback mechanisms for extraction failures
-- **Production Ready**: Logging, health checks, background processing, and monitoring
+Design details are in [ARCHITECTURE.md](ARCHITECTURE.md); the REST API is in [API_DOCUMENTATION.md](API_DOCUMENTATION.md).
 
-Check out the **[UI Walkthrough](docs/UI_WALKTHROUGH.md)** for a visual guide through the system!
+## Quick start
 
-## Quick Start
-
-### Prerequisites
-
-- Python 3.9+
-- [Ollama](https://ollama.ai) installed and running with Llama3 model
-- 4GB+ RAM (recommended 8GB for optimal performance)
-- 10GB+ disk space for vector indexes
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/AEX-WEX/vehicle-spec-rag.git
-   cd vehicle-spec-rag
-   ```
-
-2. **Create virtual environment**
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-
-3. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Configure environment**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your settings
-   ```
-
-5. **Verify Ollama is running**
-   ```bash
-   # Ollama should be accessible at http://localhost:11434
-   curl http://localhost:11434/api/tags
-   ```
-
-### Usage
-
-#### Web Interface (Recommended)
+Requires Python 3.9+ and [Ollama](https://ollama.ai) with the model pulled (`ollama pull llama3`).
 
 ```bash
-# Start the API server
-python main.py server --port 8000
+git clone https://github.com/AEX-WEX/Vehicle-Specification-Extraction-RAG-System.git
+cd Vehicle-Specification-Extraction-RAG-System
+python -m venv venv && source venv/bin/activate      # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+cp .env.example .env
 
-# Open browser and navigate to http://localhost:8000
+python main.py index data/sample-service-manual_1.pdf --force   # build the index (rebuild after any parsing/chunking change)
+python main.py server --port 8000                       # web UI at http://localhost:8000
+python main.py query "rear shock absorber nuts torque"  # or use the CLI
 ```
 
-#### Command Line
+REST example:
 
 ```bash
-# Build index from PDF
-python main.py index data/service-manual.pdf
-
-# Query for specifications
-python main.py query "What is the brake caliper torque?"
-
-# View pipeline status
-python main.py status
-
-# Export results
-python main.py query "bolt" --output results.json --format json
-
-# CSV FORMAT
-python main.py query "bolt" --output results.csv --format csv
-
+curl -X POST http://localhost:8000/query -H "Content-Type: application/json" \
+     -d '{"query": "front brake caliper guide pin bolts torque"}'
 ```
 
-#### REST API
+Docker: `docker-compose up -d` starts the API together with Ollama. The sample manual is not copied into the image; mount your own `data/`.
+
+## Evaluation
+
+Three labeled sets from the 852-page 2014 Ford F-150 workshop manual (`data/sample-service-manual_1.pdf`) measure different things:
+
+| Set | Size | Purpose |
+|---|---|---|
+| `eval/ground_truth.json` (dev) | 43 specs | regression checks; used while building the parser |
+| `eval/heldout.json` | 25 specs | never used for tuning, short natural queries: **the number to quote** |
+| `eval/unanswerable.json` | 12 queries | questions not in the manual; the system must return nothing |
 
 ```bash
-# Health check
-curl http://localhost:8000/health
-
-# Upload and index PDF
-curl -X POST -F "file=@manual.pdf" http://localhost:8000/upload_pdf
-
-# Query specifications
-curl -X POST http://localhost:8000/query \
-  -H "Content-Type: application/json" \
-  -d '{"query": "engine oil capacity"}'
-
-# Get statistics
-curl http://localhost:8000/stats
+python -m eval.run_eval                     # all sets -> eval/report.md
+python -m eval.run_eval --sets heldout unanswerable --min-exact 0.90 --max-false-answer 0.10   # release gate
+python -m eval.run_eval --predictions eval/predictions.json                                      # re-score saved output
 ```
 
-## Architecture
+It reports exact-match accuracy (component, value and unit), page accuracy, wrong-value rate, false-answer rate on unanswerable questions, and latency. Results from the latest run are in [`eval/report.md`](eval/report.md). Metric definitions, confidence caveats and the production checklist are in [docs/EVALUATION.md](docs/EVALUATION.md).
 
-The system is organized into logical modules:
+## Known limitations
 
-```
-src/
-├── pipeline.py         # Main RAG pipeline orchestration
-├── pdf_loader.py       # PDF document loading and parsing
-├── chunking.py         # Text chunking strategies
-├── embeddings.py       # Embedding model management
-├── vector_store.py     # FAISS index operations
-├── retriever.py        # Retrieval mechanisms
-└── extractor.py        # LLM-based extraction
-
-api/
-├── app.py             # FastAPI application
-└── __init__.py
-
-static/
-└── index.html         # Web UI (single-page application)
-```
-
-See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed system design and data flow.
-
-## Configuration
-
-### Environment Variables (.env)
-
-```env
-# LLM Configuration
-LLM_PROVIDER=ollama
-MODEL_NAME=llama3
-LLM_BASE_URL=http://localhost:11434
-LLM_TEMPERATURE=0.0
-LLM_MAX_TOKENS=500
-LLM_TIMEOUT=60
-
-# Embeddings
-EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
-EMBEDDING_DEVICE=cpu
-
-# Vector Store
-FAISS_INDEX_PATH=./index
-INDEX_NAME=vehicle_specs
-
-# API
-API_HOST=127.0.0.1
-API_PORT=8000
-API_RELOAD=false
-
-# Data
-DATA_DIR=./data
-LOGS_DIR=./logs
-```
-
-### YAML Configuration (config.yaml)
-
-Full control over system behavior through YAML:
-
-- **PDF Processing**: Loader type, image extraction, table parsing
-- **Chunking Strategy**: Semantic, fixed, or recursive chunking with configurable parameters
-- **Embedding Model**: Choice of models with batch processing options
-- **Vector Store**: FAISS index type and persistence settings
-- **LLM Parameters**: Temperature, token limits, timeouts
-- **Extraction**: Output validation, error fallbacks, retry policies
-
-See [config.yaml](config.yaml) for comprehensive options.
-
-## API Documentation
-
-Complete REST API documentation with examples:
-
-- **GET /health** - Health check and system status
-- **POST /upload_pdf** - Upload and index PDF
-- **POST /index_pdf** - Index PDF from file path
-- **POST /query** - Query for specifications
-- **GET /stats** - Pipeline statistics
-
-See [API_DOCUMENTATION.md](API_DOCUMENTATION.md) for detailed endpoint reference.
-
-## Documentation
-
-- **[UI Walkthrough](docs/UI_WALKTHROUGH.md)** - End-to-end workflow demonstration with examples
-- **[Architecture](ARCHITECTURE.md)** - Detailed system design and data flow
-- **[API Documentation](API_DOCUMENTATION.md)** - REST API reference and usage
-
-## Extraction Performance
-
-### Capabilities
-
-- **Document Types**: Service manuals, technical specifications, repair guides
-- **Page Count**: Tested up to 852 pages with consistent performance
-- **Specification Types**: Torque values, pressures, capacities, temperatures, dimensions
-- **Success Rate**: 100% extraction on indexed documents
-- **Speed**: ~2-5 seconds per query (varies by document size and hardware)
-
-### Extraction Example
-
-**Input Query**: "What is the torque for brake caliper bolts?"
-
-**Output**:
-```json
-{
-  "component": "Brake Caliper Bolt",
-  "spec_type": "Torque",
-  "value": "24",
-  "unit": "Nm",
-  "page_number": 145,
-  "source_chunk_id": "chunk_2847"
-}
-```
-
-## Deployment
-
-### Docker
-
-```bash
-# Build image
-docker build -t vehicle-spec-rag .
-
-# Run with Docker Compose (includes Ollama)
-docker-compose up -d
-
-# Access at http://localhost:8000
-```
-
-See [docker-compose.yml](docker-compose.yml) and [Dockerfile](Dockerfile) for details.
-
-### Production
-
-For production deployment:
-
-1. Use a WSGI server (Gunicorn, uWSCI)
-2. Implement request authentication (JWT, OAuth)
-3. Set up log aggregation (ELK, Datadog)
-4. Configure CORS appropriately
-5. Use environment-specific configs
-6. Implement caching layer (Redis)
-
-```bash
-# Production startup
-gunicorn api.app:app --workers 4 --worker-class uvicorn.workers.UvicornWorker
-```
+- The "Material" (fill capacity) parser relies on Ford's specification-code format (WSL-, ESA-...); other manufacturers' capacity tables fall back to the LLM and need Ollama running.
+- Only torque and fill-capacity tables are parsed deterministically; clearances and other "General Specifications" go through the LLM.
+- Each evaluation set comes from one manual; a new manual needs its own labeled set (see docs/EVALUATION.md).
+- Table rows that share a name across sections (for example "Shock absorber nuts" appears in several suspension and axle tables) can be attributed to the wrong page or unit. An early run returned `136 lb-in` for the spring shackle nut, where the manual says 185 Nm / 136 lb-ft.
+- Rows with footnotes ("refer to the procedure in this section") have no value and are skipped.
+- One manual per index; no cross-document search.
+- There is no authentication, rate limiting or caching in the API. Treat it as a single-user, local tool.
 
 ## Development
 
-### Setup Development Environment
-
 ```bash
-pip install -r requirements.txt
-pip install -e .  # Install in development mode
+pip install -r requirements.txt && pip install -e .
+pytest tests/test_table_parser.py tests/test_eval_scoring.py   # fast unit tests (also run in CI)
+pytest tests/                  # LLM and integration tests need Ollama running and an index built
+black src api tests eval && flake8 src api tests eval
 ```
 
-### Running Tests
-
-```bash
-pytest tests/
-pytest tests/ -v --cov=src  # With coverage
-```
-
-### Code Quality
-
-```bash
-# Format code
-black src/ api/ tests/
-
-# Lint
-flake8 src/ api/ tests/
-
-# Type checking
-mypy src/ api/
-```
-
-## Troubleshooting
-
-### Ollama Connection Issues
-
-```bash
-# Verify Ollama is running
-curl http://localhost:11434/api/tags
-
-# Check Llama3 model is available
-ollama list
-
-# Download model if needed
-ollama pull llama3
-```
-
-### Memory Issues
-
-- Reduce `max_chunk_size` in config.yaml
-- Decrease `batch_size` in embedding settings
-- Increase system RAM or use GPU acceleration
-
-### No Results from Queries
-
-1. Verify PDF is indexed: `python main.py status`
-2. Try simpler queries with common terms
-3. Check query logs for retrieval scores
-
-### Slow Performance
-
-- Increase FAISS index size (IndexIVFFlat instead of IndexFlatL2)
-- Use GPU for embeddings (set `EMBEDDING_DEVICE=cuda`)
-- Implement query caching
+`.env.example` lists the configuration keys; `config.yaml` controls chunking, retrieval and LLM parameters.
 
 ## License
 
-This project is licensed under the MIT License - see [LICENSE](LICENSE) file for details.
-
-## Citation
-
-If you use this project in research, please cite:
-
-```bibtex
-@software{vehicle_spec_rag_2026,
-  title={Vehicle Specification Extraction RAG System},
-  author={Aditya Kr. Choudhary},
-  year={2026},
-  url={https://github.com/AEX-WEX/vehicle-spec-rag}
-}
-```
-
-## Acknowledgments
-
-- [Ollama](https://ollama.ai) for local LLM inference
-- [Llama 3](https://www.meta.com/llama/) for the language model
-- [FAISS](https://github.com/facebookresearch/faiss) for vector search
-- [sentence-transformers](https://www.sbert.net) for embeddings
-- [FastAPI](https://fastapi.tiangolo.com) for the REST framework
-
-## Roadmap
-
-- [ ] Multi-model support (GPT-4, Claude, LLaMA variations)
-- [ ] Batch processing improvements
-- [ ] GPU acceleration (CUDA/ROCm)
-- [ ] Web UI enhancements (dark mode, advanced filters)
-- [ ] Specification validation against OEM databases
-- [ ] Multi-language support
-- [ ] Advanced caching strategies
-
-## Contact & Support
-
-- **Author**: Aditya Kr. Choudhary
-- **Email**: adityapscv1919@gmail.com
-- **GitHub**: [AEX-WEX](https://github.com/AEX-WEX)
-
----
-
-**Last Updated**: February 2026
-**Status**: Production Ready
-**Author**: Aditya Kr. Choudhary
+MIT, see [LICENSE](LICENSE). Author: Aditya Kumar Choudhary ([AEX-WEX](https://github.com/AEX-WEX)).

@@ -1,0 +1,18 @@
+{
+ "document": "data/sample-service-manual_1.pdf",
+ "labeling": "Questions whose answer is NOT in this manual (chassis sections only). The system must return nothing. 'brake fluid capacity' was removed (the manual does list 740 ml on p. 696) and moved to the held-out set; 'power steering fluid capacity' was added.",
+ "queries": [
+  "spark plug torque",
+  "windshield washer fluid capacity",
+  "fuel tank capacity",
+  "engine oil capacity",
+  "transmission fluid capacity",
+  "battery terminal torque",
+  "cabin air filter housing torque",
+  "wiper arm nut torque",
+  "headlamp bolt torque",
+  "engine coolant capacity",
+  "cylinder head bolt torque sequence",
+  "power steering fluid capacity"
+ ]
+}

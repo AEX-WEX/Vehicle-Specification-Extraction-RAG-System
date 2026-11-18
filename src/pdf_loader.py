@@ -11,6 +11,8 @@ from typing import List, Dict, Optional, Tuple
 from pathlib import Path
 from abc import ABC, abstractmethod
 
+from src.table_parser import rows_from_words, strip_boilerplate
+
 logger = logging.getLogger(__name__)
 
 
@@ -34,14 +36,16 @@ class PDFLoader(ABC):
 class PyMuPDFLoader(PDFLoader):
     """PDF loader using PyMuPDF (fitz) backend."""
     
-    def __init__(self, extract_tables: bool = True):
+    def __init__(self, extract_tables: bool = True, row_layout: bool = True):
         """
         Initialize PyMuPDF loader.
         
         Args:
             extract_tables: Whether to extract table structures
+            row_layout: Rebuild text rows from word positions (keeps table rows on one line)
         """
         self.extract_tables = extract_tables
+        self.row_layout = row_layout
         
     def load(self, pdf_path: str) -> List[Dict[str, any]]:
         """
@@ -65,7 +69,9 @@ class PyMuPDFLoader(PDFLoader):
             doc = fitz.open(pdf_path)
             
             for page_num, page in enumerate(doc, start=1):
-                text = page.get_text("text")
+                # Rebuild rows from word boxes so table cells stay on one line
+                words = page.get_text("words") if self.row_layout else []
+                text = rows_from_words(words) if words else page.get_text("text")
                 
                 # Extract additional metadata
                 metadata = {
@@ -183,10 +189,9 @@ class TextCleaner:
             
         # Remove common header/footer patterns
         if remove_headers_footers:
-            # Remove page numbers at start/end of lines
-            text = re.sub(r'^\d+\s*$', '', text, flags=re.MULTILINE)
-            # Remove common footer patterns
-            text = re.sub(r'Page \d+ of \d+', '', text, flags=re.IGNORECASE)
+            # NOTE: never delete lines that are only digits - in PDF tables every cell
+            # (e.g. a torque value) can be its own numeric-only line.
+            text = strip_boilerplate(text)
             
         # Remove leading/trailing whitespace
         text = text.strip()

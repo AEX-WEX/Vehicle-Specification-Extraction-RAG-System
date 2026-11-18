@@ -45,8 +45,8 @@ vector_store:
 retrieval:
   top_k: 5
   score_threshold: null
-  reranking: false
-  max_context_length: 4000
+  rerank_pool: 6          # fetch top_k*6 by embedding, rerank with query-term overlap
+  max_context_length: 8000
   
 # LLM Configuration
 llm:

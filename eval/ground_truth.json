@@ -1,0 +1,725 @@
+{
+ "document": "data/sample-service-manual_1.pdf (2014 Ford F-150 Workshop Manual, 852 pp.)",
+ "labeling": "Hand-copied from the manual's Specifications tables via pdftotext; PDF page numbers (1-based). A torque row lists several units, so any listed (value, unit) pair is accepted.",
+ "specs": [
+  {
+   "id": "T01",
+   "query": "front suspension shock absorber lower nuts torque RWD",
+   "component": "Shock absorber lower nuts",
+   "spec_type": "Torque",
+   "page_number": 24,
+   "accept": [
+    {
+     "value": 90,
+     "unit": "Nm"
+    },
+    {
+     "value": 66,
+     "unit": "lb-ft"
+    }
+   ]
+  },
+  {
+   "id": "T02",
+   "query": "front suspension tie-rod end nut torque",
+   "component": "Tie-rod end nut",
+   "spec_type": "Torque",
+   "page_number": 24,
+   "accept": [
+    {
+     "value": 115,
+     "unit": "Nm"
+    },
+    {
+     "value": 85,
+     "unit": "lb-ft"
+    }
+   ]
+  },
+  {
+   "id": "T03",
+   "query": "front suspension lower ball joint nut torque",
+   "component": "Lower ball joint nut",
+   "spec_type": "Torque",
+   "page_number": 24,
+   "accept": [
+    {
+     "value": 175,
+     "unit": "Nm"
+    },
+    {
+     "value": 129,
+     "unit": "lb-ft"
+    }
+   ]
+  },
+  {
+   "id": "T04",
+   "query": "front suspension stabilizer bar link nuts torque",
+   "component": "Stabilizer bar link nuts",
+   "spec_type": "Torque",
+   "page_number": 24,
+   "accept": [
+    {
+     "value": 70,
+     "unit": "Nm"
+    },
+    {
+     "value": 52,
+     "unit": "lb-ft"
+    }
+   ]
+  },
+  {
+   "id": "T05",
+   "query": "front suspension wheel bearing and wheel hub bolts torque",
+   "component": "Wheel bearing and wheel hub bolts",
+   "spec_type": "Torque",
+   "page_number": 24,
+   "accept": [
+    {
+     "value": 175,
+     "unit": "Nm"
+    },
+    {
+     "value": 129,
+     "unit": "lb-ft"
+    }
+   ]
+  },
+  {
+   "id": "T06",
+   "query": "front suspension 4WD halfshaft nut torque",
+   "component": "Halfshaft nut",
+   "spec_type": "Torque",
+   "page_number": 59,
+   "accept": [
+    {
+     "value": 40,
+     "unit": "Nm"
+    },
+    {
+     "value": 30,
+     "unit": "lb-ft"
+    }
+   ]
+  },
+  {
+   "id": "T07",
+   "query": "front suspension 4WD upper arm-to-frame nuts torque",
+   "component": "Upper arm-to-frame nuts",
+   "spec_type": "Torque",
+   "page_number": 59,
+   "accept": [
+    {
+     "value": 150,
+     "unit": "Nm"
+    },
+    {
+     "value": 111,
+     "unit": "lb-ft"
+    }
+   ]
+  },
+  {
+   "id": "T08",
+   "query": "SVT Raptor shock absorber lower nut torque",
+   "component": "Shock absorber lower nut (SVT Raptor)",
+   "spec_type": "Torque",
+   "page_number": 59,
+   "accept": [
+    {
+     "value": 550,
+     "unit": "Nm"
+    },
+    {
+     "value": 406,
+     "unit": "lb-ft"
+    }
+   ]
+  },
+  {
+   "id": "T09",
+   "query": "rear suspension shock absorber nuts torque",
+   "component": "Shock absorber nuts",
+   "spec_type": "Torque",
+   "page_number": 128,
+   "accept": [
+    {
+     "value": 90,
+     "unit": "Nm"
+    },
+    {
+     "value": 66,
+     "unit": "lb-ft"
+    }
+   ]
+  },
+  {
+   "id": "T10",
+   "query": "rear suspension spring shackle-to-frame nut torque",
+   "component": "Spring shackle-to-frame nut",
+   "spec_type": "Torque",
+   "page_number": 128,
+   "accept": [
+    {
+     "value": 185,
+     "unit": "Nm"
+    },
+    {
+     "value": 136,
+     "unit": "lb-ft"
+    }
+   ]
+  },
+  {
+   "id": "T11",
+   "query": "rear suspension spring-to-frame nut torque",
+   "component": "Spring-to-frame nut",
+   "spec_type": "Torque",
+   "page_number": 128,
+   "accept": [
+    {
+     "value": 350,
+     "unit": "Nm"
+    },
+    {
+     "value": 258,
+     "unit": "lb-ft"
+    }
+   ]
+  },
+  {
+   "id": "T12",
+   "query": "rear suspension jounce bumper-to-frame bolt torque",
+   "component": "Jounce bumper-to-frame bolt",
+   "spec_type": "Torque",
+   "page_number": 128,
+   "accept": [
+    {
+     "value": 35,
+     "unit": "Nm"
+    },
+    {
+     "value": 26,
+     "unit": "lb-ft"
+    }
+   ]
+  },
+  {
+   "id": "T13",
+   "query": "TPMS valve stem sensor screw torque",
+   "component": "Valve stem-to-Tire Pressure Monitoring System (TPMS) sensor screw",
+   "spec_type": "Torque",
+   "page_number": 140,
+   "accept": [
+    {
+     "value": 1.5,
+     "unit": "Nm"
+    },
+    {
+     "value": 13,
+     "unit": "lb-in"
+    }
+   ]
+  },
+  {
+   "id": "T14",
+   "query": "rear driveshaft center bearing bolts torque",
+   "component": "Rear driveshaft center bearing bolts",
+   "spec_type": "Torque",
+   "page_number": 234,
+   "accept": [
+    {
+     "value": 48,
+     "unit": "Nm"
+    },
+    {
+     "value": 35,
+     "unit": "lb-ft"
+    }
+   ]
+  },
+  {
+   "id": "T15",
+   "query": "rear driveshaft flange bolts torque",
+   "component": "Rear driveshaft flange bolts",
+   "spec_type": "Torque",
+   "page_number": 234,
+   "accept": [
+    {
+     "value": 103,
+     "unit": "Nm"
+    },
+    {
+     "value": 76,
+     "unit": "lb-ft"
+    }
+   ]
+  },
+  {
+   "id": "T16",
+   "query": "front driveshaft flange-to-pinion flange bolts torque",
+   "component": "Front driveshaft flange-to-pinion flange bolts",
+   "spec_type": "Torque",
+   "page_number": 234,
+   "accept": [
+    {
+     "value": 55,
+     "unit": "Nm"
+    },
+    {
+     "value": 41,
+     "unit": "lb-ft"
+    }
+   ]
+  },
+  {
+   "id": "T17",
+   "query": "front driveshaft flange-to-transfer case flange bolts torque",
+   "component": "Front driveshaft flange-to-transfer case flange bolts",
+   "spec_type": "Torque",
+   "page_number": 234,
+   "accept": [
+    {
+     "value": 55,
+     "unit": "Nm"
+    },
+    {
+     "value": 41,
+     "unit": "lb-ft"
+    }
+   ]
+  },
+  {
+   "id": "T18",
+   "query": "rear axle differential housing cover bolts torque",
+   "component": "Differential housing cover bolts",
+   "spec_type": "Torque",
+   "page_number": 259,
+   "accept": [
+    {
+     "value": 45,
+     "unit": "Nm"
+    },
+    {
+     "value": 33,
+     "unit": "lb-ft"
+    }
+   ]
+  },
+  {
+   "id": "T19",
+   "query": "rear axle differential pinion shaft lock bolt torque",
+   "component": "Differential pinion shaft lock bolt",
+   "spec_type": "Torque",
+   "page_number": 259,
+   "accept": [
+    {
+     "value": 30,
+     "unit": "Nm"
+    },
+    {
+     "value": 22,
+     "unit": "lb-ft"
+    }
+   ]
+  },
+  {
+   "id": "T20",
+   "query": "rear axle filler plug torque",
+   "component": "Filler plug",
+   "spec_type": "Torque",
+   "page_number": 259,
+   "accept": [
+    {
+     "value": 52,
+     "unit": "Nm"
+    },
+    {
+     "value": 38,
+     "unit": "lb-ft"
+    }
+   ]
+  },
+  {
+   "id": "T21",
+   "query": "rear axle lower shock absorber nuts torque",
+   "component": "Lower shock absorber nuts",
+   "spec_type": "Torque",
+   "page_number": 259,
+   "accept": [
+    {
+     "value": 90,
+     "unit": "Nm"
+    },
+    {
+     "value": 66,
+     "unit": "lb-ft"
+    }
+   ]
+  },
+  {
+   "id": "T22",
+   "query": "rear axle wheel speed sensor bolts torque",
+   "component": "Wheel speed sensor bolts",
+   "spec_type": "Torque",
+   "page_number": 259,
+   "accept": [
+    {
+     "value": 15,
+     "unit": "Nm"
+    },
+    {
+     "value": 133,
+     "unit": "lb-in"
+    }
+   ]
+  },
+  {
+   "id": "T23",
+   "query": "rear axle vent torque",
+   "component": "Axle vent",
+   "spec_type": "Torque",
+   "page_number": 259,
+   "accept": [
+    {
+     "value": 18,
+     "unit": "Nm"
+    },
+    {
+     "value": 159,
+     "unit": "lb-in"
+    }
+   ]
+  },
+  {
+   "id": "T24",
+   "query": "rear axle ELD differential bearing cap bolts torque",
+   "component": "Differential bearing cap bolts",
+   "spec_type": "Torque",
+   "page_number": 341,
+   "accept": [
+    {
+     "value": 105,
+     "unit": "Nm"
+    },
+    {
+     "value": 77,
+     "unit": "lb-ft"
+    }
+   ]
+  },
+  {
+   "id": "T25",
+   "query": "rear axle electronic locking differential coil screws torque",
+   "component": "Electronic Locking Differential (ELD) coil screws",
+   "spec_type": "Torque",
+   "page_number": 341,
+   "accept": [
+    {
+     "value": 5,
+     "unit": "Nm"
+    },
+    {
+     "value": 44,
+     "unit": "lb-in"
+    }
+   ]
+  },
+  {
+   "id": "T26",
+   "query": "front axle housing tube bolts torque",
+   "component": "Axle housing tube bolts",
+   "spec_type": "Torque",
+   "page_number": 449,
+   "accept": [
+    {
+     "value": 73,
+     "unit": "Nm"
+    },
+    {
+     "value": 54,
+     "unit": "lb-ft"
+    }
+   ]
+  },
+  {
+   "id": "T27",
+   "query": "front axle housing tube bushing bolt torque",
+   "component": "Axle housing tube bushing bolt",
+   "spec_type": "Torque",
+   "page_number": 449,
+   "accept": [
+    {
+     "value": 175,
+     "unit": "Nm"
+    },
+    {
+     "value": 129,
+     "unit": "lb-ft"
+    }
+   ]
+  },
+  {
+   "id": "T28",
+   "query": "front disc brake caliper anchor plate bolts torque",
+   "component": "Brake caliper anchor plate bolts",
+   "spec_type": "Torque",
+   "page_number": 636,
+   "accept": [
+    {
+     "value": 250,
+     "unit": "Nm"
+    },
+    {
+     "value": 184,
+     "unit": "lb-ft"
+    }
+   ]
+  },
+  {
+   "id": "T29",
+   "query": "front disc brake caliper guide pin bolts torque",
+   "component": "Brake caliper guide pin bolts",
+   "spec_type": "Torque",
+   "page_number": 636,
+   "accept": [
+    {
+     "value": 37,
+     "unit": "Nm"
+    },
+    {
+     "value": 27,
+     "unit": "lb-ft"
+    }
+   ]
+  },
+  {
+   "id": "T30",
+   "query": "front disc brake caliper flow bolt torque",
+   "component": "Brake caliper flow bolt",
+   "spec_type": "Torque",
+   "page_number": 636,
+   "accept": [
+    {
+     "value": 35,
+     "unit": "Nm"
+    },
+    {
+     "value": 26,
+     "unit": "lb-ft"
+    }
+   ]
+  },
+  {
+   "id": "T31",
+   "query": "front brake tube fitting torque",
+   "component": "Brake tube fitting",
+   "spec_type": "Torque",
+   "page_number": 636,
+   "accept": [
+    {
+     "value": 17,
+     "unit": "Nm"
+    },
+    {
+     "value": 150,
+     "unit": "lb-in"
+    }
+   ]
+  },
+  {
+   "id": "T32",
+   "query": "rear disc brake caliper support bracket bolts torque",
+   "component": "Brake caliper support bracket bolts",
+   "spec_type": "Torque",
+   "page_number": 652,
+   "accept": [
+    {
+     "value": 150,
+     "unit": "Nm"
+    },
+    {
+     "value": 111,
+     "unit": "lb-ft"
+    }
+   ]
+  },
+  {
+   "id": "T33",
+   "query": "rear disc brake caliper guide pin bolts torque",
+   "component": "Brake caliper guide pin bolts",
+   "spec_type": "Torque",
+   "page_number": 652,
+   "accept": [
+    {
+     "value": 33,
+     "unit": "Nm"
+    },
+    {
+     "value": 24,
+     "unit": "lb-ft"
+    }
+   ]
+  },
+  {
+   "id": "T34",
+   "query": "rear disc brake caliper bleeder screw torque",
+   "component": "Brake caliper bleeder screw",
+   "spec_type": "Torque",
+   "page_number": 652,
+   "accept": [
+    {
+     "value": 10,
+     "unit": "Nm"
+    },
+    {
+     "value": 89,
+     "unit": "lb-in"
+    }
+   ]
+  },
+  {
+   "id": "T35",
+   "query": "parking brake control bolts torque",
+   "component": "Parking brake control bolts",
+   "spec_type": "Torque",
+   "page_number": 672,
+   "accept": [
+    {
+     "value": 20,
+     "unit": "Nm"
+    },
+    {
+     "value": 177,
+     "unit": "lb-in"
+    }
+   ]
+  },
+  {
+   "id": "T36",
+   "query": "brake master cylinder nuts torque",
+   "component": "Brake master cylinder nuts",
+   "spec_type": "Torque",
+   "page_number": 696,
+   "accept": [
+    {
+     "value": 25,
+     "unit": "Nm"
+    },
+    {
+     "value": 18,
+     "unit": "lb-ft"
+    }
+   ]
+  },
+  {
+   "id": "T37",
+   "query": "brake pedal bracket bolts torque",
+   "component": "Brake pedal bracket bolts",
+   "spec_type": "Torque",
+   "page_number": 696,
+   "accept": [
+    {
+     "value": 25,
+     "unit": "Nm"
+    },
+    {
+     "value": 18,
+     "unit": "lb-ft"
+    }
+   ]
+  },
+  {
+   "id": "T38",
+   "query": "primary brake tube fitting torque",
+   "component": "Primary brake tube fitting",
+   "spec_type": "Torque",
+   "page_number": 696,
+   "accept": [
+    {
+     "value": 28,
+     "unit": "Nm"
+    },
+    {
+     "value": 21,
+     "unit": "lb-ft"
+    }
+   ]
+  },
+  {
+   "id": "T39",
+   "query": "secondary brake tube fitting torque",
+   "component": "Secondary brake tube fitting",
+   "spec_type": "Torque",
+   "page_number": 696,
+   "accept": [
+    {
+     "value": 20,
+     "unit": "Nm"
+    },
+    {
+     "value": 177,
+     "unit": "lb-in"
+    }
+   ]
+  },
+  {
+   "id": "T40",
+   "query": "front drive halfshaft wheel hub nut torque",
+   "component": "Wheel hub nut",
+   "spec_type": "Torque",
+   "page_number": 578,
+   "accept": [
+    {
+     "value": 40,
+     "unit": "Nm"
+    },
+    {
+     "value": 30,
+     "unit": "lb-ft"
+    }
+   ]
+  },
+  {
+   "id": "C41",
+   "query": "rear axle lubricant fill capacity Ford 8.8-inch ring gear",
+   "component": "Rear axle lubricant",
+   "spec_type": "Capacity",
+   "page_number": 258,
+   "accept": [
+    {
+     "value": 2.84,
+     "unit": "L"
+    }
+   ]
+  },
+  {
+   "id": "C42",
+   "query": "front axle lubricant fill capacity",
+   "component": "Front axle lubricant",
+   "spec_type": "Capacity",
+   "page_number": 449,
+   "accept": [
+    {
+     "value": 1.66,
+     "unit": "L"
+    }
+   ]
+  },
+  {
+   "id": "C43",
+   "query": "front axle additive friction modifier capacity",
+   "component": "Additive friction modifier",
+   "spec_type": "Capacity",
+   "page_number": 449,
+   "accept": [
+    {
+     "value": 4.0,
+     "unit": "oz"
+    }
+   ]
+  }
+ ]
+}

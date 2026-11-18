@@ -6,77 +6,32 @@ from automotive service manual PDFs using retrieval-augmented generation.
 """
 
 __version__ = "1.0.0"
-__author__ = "Vehicle Spec RAG Team"
+__author__ = "Aditya Kumar Choudhary"
 
-# Expose main pipeline interface
-from src.pipeline import VehicleSpecRAGPipeline, create_pipeline
+# Public API, imported lazily so that `import src.table_parser` does not load torch/faiss.
+_EXPORTS = {
+    "VehicleSpecRAGPipeline": "src.pipeline", "create_pipeline": "src.pipeline",
+    "get_pdf_hash": "src.utils", "load_indexed_pdf_metadata": "src.utils",
+    "save_indexed_pdf_metadata": "src.utils", "is_pdf_different": "src.utils",
+    "load_pdf": "src.pdf_loader", "PyMuPDFLoader": "src.pdf_loader", "PDFMinerLoader": "src.pdf_loader",
+    "TextCleaner": "src.pdf_loader",
+    "Chunk": "src.chunking", "SemanticChunker": "src.chunking", "RecursiveChunker": "src.chunking",
+    "create_chunker": "src.chunking",
+    "EmbeddingModel": "src.embeddings", "CachedEmbeddingModel": "src.embeddings",
+    "FAISSVectorStore": "src.vector_store",
+    "Retriever": "src.retriever", "HybridRetriever": "src.retriever",
+    "ExtractedSpec": "src.extractor", "RuleBasedExtractor": "src.extractor", "OllamaExtractor": "src.extractor",
+    "SmartExtractor": "src.extractor", "TableRowExtractor": "src.extractor",
+    "SpecificationEvaluator": "src.evaluation", "RetrievalEvaluator": "src.evaluation",
+    "GroundTruthSpec": "src.evaluation", "EvaluationResult": "src.evaluation", "load_ground_truth": "src.evaluation",
+}
 
-# Expose utility functions
-from src.utils import (
-    get_pdf_hash,
-    load_indexed_pdf_metadata,
-    save_indexed_pdf_metadata,
-    is_pdf_different,
-)
 
-# Expose core components for advanced usage
-from src.pdf_loader import load_pdf, PyMuPDFLoader, PDFMinerLoader, TextCleaner
-from src.chunking import Chunk, SemanticChunker, RecursiveChunker, create_chunker
-from src.embeddings import EmbeddingModel, CachedEmbeddingModel
-from src.vector_store import FAISSVectorStore
-from src.retriever import Retriever, HybridRetriever
-from src.extractor import ExtractedSpec, RuleBasedExtractor, OllamaExtractor, SmartExtractor
-from src.evaluation import (
-    SpecificationEvaluator,
-    RetrievalEvaluator,
-    GroundTruthSpec,
-    EvaluationResult,
-    load_ground_truth
-)
+def __getattr__(name):
+    if name in _EXPORTS:
+        import importlib
+        return getattr(importlib.import_module(_EXPORTS[name]), name)
+    raise AttributeError(f"module 'src' has no attribute {name!r}")
 
-__all__ = [
-    # Main pipeline
-    "VehicleSpecRAGPipeline",
-    "create_pipeline",
-    
-    # Utilities
-    "get_pdf_hash",
-    "load_indexed_pdf_metadata",
-    "save_indexed_pdf_metadata",
-    "is_pdf_different",
-    
-    # PDF processing
-    "load_pdf",
-    "PyMuPDFLoader",
-    "PDFMinerLoader",
-    "TextCleaner",
-    
-    # Chunking
-    "Chunk",
-    "SemanticChunker",
-    "RecursiveChunker",
-    "create_chunker",
-    
-    # Embeddings
-    "EmbeddingModel",
-    "CachedEmbeddingModel",
-    
-    # Vector storage
-    "FAISSVectorStore",
-    
-    # Retrieval
-    "Retriever",
-    "HybridRetriever",
-    
-    # Extraction
 
-    "ExtractedSpec",
-    "RuleBasedExtractor",
-    
-    # Evaluation
-    "SpecificationEvaluator",
-    "RetrievalEvaluator",
-    "GroundTruthSpec",
-    "EvaluationResult",
-    "load_ground_truth",
-]
+__all__ = sorted(_EXPORTS)

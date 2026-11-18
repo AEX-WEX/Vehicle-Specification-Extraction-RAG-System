@@ -1,0 +1,22 @@
+CHUNK ID: chunk_00854
+PAGE: 601
+POSITION: chars 0-800
+LENGTH: 799 chars
+
+======================================================================
+TEXT CONTENT:
+======================================================================
+Brake System 
+The brake system consists of the following components: 
+� Front and rear disc brakes 
+� Cable/drum-in-hat actuated parking brake 
+� Brake master cylinder and fluid reservoir 
+� Vacuum-assisted power brake booster 
+� Four-wheel ABS 
+� Red brake warning indicator 
+The brake pedal is connected to the power brake booster, which is connected to the brake master cylinder. 
+When the brake pedal is pressed, brake fluid is pushed through the double-walled steel tubes and flexible 
+hoses to the front and rear disc brake calipers. The brake fluid enters the disc brake calipers, forcing the 
+caliper pistons and brake pads outward against the brake disc friction surface, slowing or stopping rotation. 
+When the brake pedal is released, brake fluid pressure is relieved, returning the front
+======================================================================

@@ -61,7 +61,8 @@ results.csv
 # OS specific
 Thumbs.db
 
-# Documentation files (interview/internal)
-ACCURACY_METRICS_EXPLAINED.md
-EXTRACTOR_DIAGNOSTICS.md
-QUICK_REFERENCE_DIAGNOSTICS.md
+# Local-only scratch
+docs/internal/
+.qodo/
+data/The_Psychology_of_Money.pdf
+eval/predictions.json

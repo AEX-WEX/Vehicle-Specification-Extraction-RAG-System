@@ -52,6 +52,8 @@ Example result:
 
 This demonstrates retrieval-grounded specification extraction.
 
+> **Known issue in this example:** the 1.66 L figure is the *front axle lubricant* fill capacity (PDF page 449 of the F-150 manual), not engine oil, and page 515 is a special-tools list. The screenshot was captured from an early build that mislabelled the component. See `eval/report.md` for measured accuracy and failure cases, and re-capture the screenshot after fixing.
+
 ---
 
 ## 4. JSON Export

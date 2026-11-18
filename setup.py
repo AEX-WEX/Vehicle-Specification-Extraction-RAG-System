@@ -77,16 +77,16 @@ docs_requires = [
 setup(
     name="vehicle-spec-rag",
     version=version,
-    author="Vehicle Spec RAG Team",
-    author_email="contact@example.com",
+    author="Aditya Kumar Choudhary",
+    author_email="adityapscv1919@gmail.com",
     description="RAG-based vehicle specification extraction from service manuals",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/vehicle-spec-rag",
+    url="https://github.com/AEX-WEX/Vehicle-Specification-Extraction-RAG-System",
     project_urls={
-        "Bug Reports": "https://github.com/yourusername/vehicle-spec-rag/issues",
-        "Source": "https://github.com/yourusername/vehicle-spec-rag",
-        "Documentation": "https://github.com/yourusername/vehicle-spec-rag#readme",
+        "Bug Reports": "https://github.com/AEX-WEX/Vehicle-Specification-Extraction-RAG-System/issues",
+        "Source": "https://github.com/AEX-WEX/Vehicle-Specification-Extraction-RAG-System",
+        "Documentation": "https://github.com/AEX-WEX/Vehicle-Specification-Extraction-RAG-System#readme",
     },
     
     # Package configuration

@@ -11,6 +11,9 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 
+from src.table_parser import tokens as _tokens
+
+
 class Retriever:
     """
     Retrieves relevant context from vector store.
@@ -21,7 +24,8 @@ class Retriever:
                  embedding_model: 'EmbeddingModel',
                  top_k: int = 5,
                  score_threshold: Optional[float] = None,
-                 max_context_length: int = 4000):
+                 max_context_length: int = 4000,
+                 rerank_pool: int = 6):
         """
         Initialize retriever.
         
@@ -37,7 +41,18 @@ class Retriever:
         self.top_k = top_k
         self.score_threshold = score_threshold
         self.max_context_length = max_context_length
+        self.rerank_pool = max(1, int(rerank_pool))
     
+    def table_contexts(self) -> List[Dict]:
+        """All specification-table chunks (a few dozen per manual). Tables are matched lexically
+        against every row, so they are found even when the embedding search ranks them low."""
+        out = []
+        for ch in self.vector_store.chunks:
+            if ch.metadata.get("kind") == "table" or "Torque Specifications" in ch.text:
+                out.append({"text": ch.text, "chunk_id": ch.chunk_id, "page_number": ch.page_number,
+                            "score": 0.0, "distance": 0.0, "metadata": ch.metadata})
+        return out
+
     def retrieve(self, query: str) -> List[Dict]:
         """
         Retrieve relevant context for query.
@@ -53,8 +68,19 @@ class Retriever:
         # Generate query embedding
         query_embedding = self.embedding_model.embed_query(query)
         
-        # Search vector store
-        results = self.vector_store.search(query_embedding, self.top_k * 2)
+        # Search a wider pool, then rerank it lexically: embeddings alone rank near-identical
+        # spec tables from different manual sections almost equally.
+        pool = self.top_k * self.rerank_pool
+        results = self.vector_store.search(query_embedding, pool)
+        if self.rerank_pool > 1:
+            q = _tokens(query)
+
+            def combined(item):
+                dist, chunk, _ = item
+                lex = len(q & _tokens(chunk.text)) / len(q) if q else 0.0
+                return self._distance_to_score(dist) + 0.6 * lex
+
+            results = sorted(results, key=combined, reverse=True)
         
         # Filter by score threshold if specified
         if self.score_threshold is not None:
