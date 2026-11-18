@@ -1,0 +1,157 @@
+{
+ "document": "data/Tucson.pdf",
+ "labeling": "Generalization test on a different document type (Hyundai Tucson OWNER's manual, 554 pp.). Labels read by hand from the printed US-quart column. Liter values are stored as font glyphs ((cid:N)) in this PDF, so they are not scored. Ranges list both ends as acceptable. Page numbers are PDF page indexes. Tiny set: a smoke test, not a benchmark.",
+ "specs": [
+  {
+   "id": "T01",
+   "query": "engine oil capacity gasoline 2.0",
+   "component": "Engine oil (gasoline, Smartstream G2.0)",
+   "spec_type": "Capacity",
+   "page_number": 25,
+   "accept": [
+    {
+     "value": 4.54,
+     "unit": "qt"
+    }
+   ]
+  },
+  {
+   "id": "T02",
+   "query": "engine oil capacity diesel",
+   "component": "Engine oil (diesel, Smartstream D2.0)",
+   "spec_type": "Capacity",
+   "page_number": 25,
+   "accept": [
+    {
+     "value": 5.92,
+     "unit": "qt"
+    }
+   ]
+  },
+  {
+   "id": "T03",
+   "query": "automatic transmission fluid capacity gasoline",
+   "component": "Automatic transmission fluid (gasoline)",
+   "spec_type": "Capacity",
+   "page_number": 25,
+   "accept": [
+    {
+     "value": 7.08,
+     "unit": "qt"
+    }
+   ]
+  },
+  {
+   "id": "T04",
+   "query": "rear differential oil capacity",
+   "component": "Rear differential oil (4WD)",
+   "spec_type": "Capacity",
+   "page_number": 26,
+   "accept": [
+    {
+     "value": 0.56,
+     "unit": "qt"
+    },
+    {
+     "value": 0.67,
+     "unit": "qt"
+    }
+   ]
+  },
+  {
+   "id": "T05",
+   "query": "transfer case oil capacity",
+   "component": "Transfer case oil (4WD)",
+   "spec_type": "Capacity",
+   "page_number": 26,
+   "accept": [
+    {
+     "value": 0.65,
+     "unit": "qt"
+    },
+    {
+     "value": 0.71,
+     "unit": "qt"
+    }
+   ]
+  },
+  {
+   "id": "T06",
+   "query": "urea solution capacity",
+   "component": "Urea solution (diesel)",
+   "spec_type": "Capacity",
+   "page_number": 26,
+   "accept": [
+    {
+     "value": 14.79,
+     "unit": "qt"
+    }
+   ]
+  },
+  {
+   "id": "T07",
+   "query": "coolant capacity gasoline",
+   "component": "Coolant (Smartstream G2.0)",
+   "spec_type": "Capacity",
+   "page_number": 26,
+   "accept": [
+    {
+     "value": 7.14,
+     "unit": "qt"
+    }
+   ]
+  },
+  {
+   "id": "T08",
+   "query": "coolant capacity diesel",
+   "component": "Coolant (Smartstream D2.0)",
+   "spec_type": "Capacity",
+   "page_number": 26,
+   "accept": [
+    {
+     "value": 9.43,
+     "unit": "qt"
+    }
+   ]
+  },
+  {
+   "id": "T09",
+   "query": "wheel nut tightening torque",
+   "component": "Wheel nut",
+   "spec_type": "Torque",
+   "page_number": [
+    22,
+    443,
+    444,
+    454,
+    503
+   ],
+   "accept": [
+    {
+     "value": 107,
+     "unit": "Nm"
+    },
+    {
+     "value": 127,
+     "unit": "Nm"
+    },
+    {
+     "value": 11,
+     "unit": "kgf.m"
+    },
+    {
+     "value": 13,
+     "unit": "kgf.m"
+    },
+    {
+     "value": 79,
+     "unit": "lbf.ft"
+    },
+    {
+     "value": 94,
+     "unit": "lbf.ft"
+    }
+   ]
+  }
+ ]
+}

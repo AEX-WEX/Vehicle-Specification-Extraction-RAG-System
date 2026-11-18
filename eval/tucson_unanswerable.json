@@ -1,0 +1,10 @@
+{
+ "document": "data/Tucson.pdf",
+ "queries": [
+  "clutch fluid capacity",
+  "wiper blade size",
+  "spark plug gap",
+  "front differential oil capacity",
+  "power steering fluid capacity"
+ ]
+}

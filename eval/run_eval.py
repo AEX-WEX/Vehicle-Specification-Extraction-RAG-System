@@ -19,7 +19,8 @@ from pathlib import Path
 from eval.scoring import percentile, score_abstention, score_one, summarize
 
 HERE = Path(__file__).parent
-FILES = {"dev": "ground_truth.json", "heldout": "heldout.json", "unanswerable": "unanswerable.json"}
+FILES = {"dev": "ground_truth.json", "heldout": "heldout.json", "unanswerable": "unanswerable.json",
+         "tucson": "tucson.json", "tucson_unanswerable": "tucson_unanswerable.json"}
 
 
 def run_queries(pipe, items):
@@ -43,9 +44,10 @@ def stats(preds):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--sets", nargs="+", default=list(FILES), choices=list(FILES))
+    ap.add_argument("--sets", nargs="+", default=["dev","heldout","unanswerable"], choices=list(FILES))
     ap.add_argument("--predictions", help="score a saved predictions.json instead of running the pipeline")
     ap.add_argument("--limit", type=int)
+    ap.add_argument("--config", default="config.yaml", help="pipeline config (use config.tucson.yaml for the Tucson sets)")
     ap.add_argument("--out", default=str(HERE / "report.md"))
     ap.add_argument("--min-exact", type=float, help="fail (exit 1) if held-out exact-match accuracy is below this")
     ap.add_argument("--max-false-answer", type=float, help="fail if more than this share of unanswerable queries get an answer")
@@ -56,24 +58,24 @@ def main():
         allp = json.load(open(a.predictions, encoding="utf-8"))
     else:
         from src.pipeline import create_pipeline
-        pipe = create_pipeline()
+        pipe = create_pipeline(a.config)
         pipe.load_index()
         allp = {}
         for s in a.sets:
-            if s == "unanswerable":
+            if s.endswith("unanswerable"):
                 items = [(q, q) for q in data[s]["queries"]]
             else:
                 items = [(g["id"], g["query"]) for g in data[s]["specs"]]
             allp[s] = run_queries(pipe, items[: a.limit] if a.limit else items)
-        json.dump(allp, open(HERE / "predictions.json", "w", encoding="utf-8"), indent=1)
+        json.dump(allp, open(HERE / ("predictions_tucson.json" if a.sets[0].startswith("tucson") else "predictions.json"), "w", encoding="utf-8"), indent=1)
 
-    L = ["# Evaluation report", "", "Document: data/sample-service-manual_1.pdf (2014 Ford F-150 Workshop Manual, 852 pp.)", ""]
+    L = ["# Evaluation report", "", "Document: " + data[a.sets[0]].get("document", "?") + (" (2014 Ford F-150 Workshop Manual, 852 pp.)" if "Ford" in str(data[a.sets[0]].get("document", "")) or "sample-service" in str(data[a.sets[0]].get("document", "")) else ""), ""]
     gate_fail = []
     summary = {}
     for s in a.sets:
         preds = allp.get(s, {})
         st = stats(preds)
-        if s == "unanswerable":
+        if s.endswith("unanswerable"):
             qs = data[s]["queries"][: a.limit] if a.limit else data[s]["queries"]
             m = score_abstention([preds.get(q, {}).get("specifications", []) for q in qs])
             summary[s] = m

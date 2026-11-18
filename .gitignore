@@ -66,3 +66,5 @@ docs/internal/
 .qodo/
 data/The_Psychology_of_Money.pdf
 eval/predictions.json
+eval/predictions_tucson.json
+index/tucson/
